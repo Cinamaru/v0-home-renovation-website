@@ -933,9 +933,9 @@ function ProductsPage({
       { name: "Chrome Pull-Down Kitchen Faucet", price: "$320.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-A2DwkI2p0bS1mMVNSJBSFlKgIuIFw5.png" },
     ],
     lighting: [
-      { name: "Under-Cabinet LED Strip Kit", price: "$180.00", stock: "In Stock" },
-      { name: "Pendant Light Set – Brushed Bronze (3-pack)", price: "$440.00", stock: "In Stock" },
-      { name: "Recessed Lighting Kit – 6 pack", price: "$290.00", stock: "In Stock" },
+      { name: "Under-Cabinet LED Strip Kit", price: "$180.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ieCJgfQo7YaSsMR1n73LpzgBS14ntF.png" },
+      { name: "Pendant Light Set – Brushed Bronze (3-pack)", price: "$440.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-fkPHEax47KAwjOskZbY4nYg2G0yD3X.png" },
+      { name: "Recessed Lighting Kit – 6 pack", price: "$290.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GI566smeTSQ6TsVaa8CGFOO0XFCWxv.png" },
     ],
   }
 
