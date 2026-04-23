@@ -918,9 +918,9 @@ function ProductsPage({
 
   const products = {
     cabinets: [
-      { name: "42-inch Shaker Cabinet Set – White", price: "$1,299.00", stock: "In Stock" },
-      { name: "Deluxe Oak Cabinet Kit", price: "$4,500.00", stock: "In Stock" },
-      { name: "Farmhouse Base Cabinet – Walnut", price: "$2,100.00", stock: "Low Stock" },
+      { name: "42-inch Shaker Cabinet Set – White", price: "$1,299.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-oBjtmZmlwblIwgOm7HCeVBTBM4lcsT.png" },
+      { name: "Deluxe Oak Cabinet Kit", price: "$4,500.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-7ZaeKYZfeTMWiWkLJuqWlpsNwN5P6v.png" },
+      { name: "Farmhouse Base Cabinet – Walnut", price: "$2,100.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BgclTP87kqrPzQVe98nRfijKVkeVD2.png" },
     ],
     appliances: [
       { name: "Stainless Steel Range – 36 inch", price: "$2,800.00", stock: "In Stock" },
@@ -979,8 +979,16 @@ function ProductsPage({
           {products[category].map((product) => (
             <Card key={product.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
               <CardContent className="p-6">
-                <div className="flex h-40 items-center justify-center rounded-lg bg-[#FAF7F2] mb-4">
-                  <Package className="h-16 w-16 text-[#7C5C3E]/50" />
+                <div className="flex h-40 items-center justify-center rounded-lg bg-[#FAF7F2] mb-4 overflow-hidden">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <Package className="h-16 w-16 text-[#7C5C3E]/50" />
+                  )}
                 </div>
                 <h3 className="font-semibold text-[#2C1A0E] mb-2">{product.name}</h3>
                 <p className="text-xl font-bold text-[#7C5C3E] mb-3">{product.price}</p>
