@@ -923,14 +923,14 @@ function ProductsPage({
       { name: "Farmhouse Base Cabinet – Walnut", price: "$2,100.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BgclTP87kqrPzQVe98nRfijKVkeVD2.png" },
     ],
     appliances: [
-      { name: "Stainless Steel Range – 36 inch", price: "$2,800.00", stock: "In Stock" },
-      { name: "Built-in Dishwasher – Premium Series", price: "$1,100.00", stock: "In Stock" },
-      { name: "French Door Refrigerator", price: "$2,200.00", stock: "Low Stock" },
+      { name: "Stainless Steel Range – 36 inch", price: "$2,800.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YNYnPwhuPtt8tzXTLwKN36CzJhxcwg.png" },
+      { name: "Built-in Dishwasher – Premium Series", price: "$1,100.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-TqJUuDpLoSbsqmmaoq2hLiB27SdRYy.png" },
+      { name: "French Door Refrigerator", price: "$2,200.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-cNa6eKWSNrsen0PLnkilzf0HPcmiqD.png" },
     ],
     sinks: [
-      { name: "Stainless Steel Farmhouse Sink (Large)", price: "$549.00", stock: "In Stock" },
-      { name: "Granite Double Sink – Undermount", price: "$850.00", stock: "In Stock" },
-      { name: "Chrome Pull-Down Kitchen Faucet", price: "$320.00", stock: "In Stock" },
+      { name: "Stainless Steel Farmhouse Sink (Large)", price: "$549.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-T2RNgj9HqoTuDgUeUpn06mrCWHSylG.png" },
+      { name: "Granite Double Sink – Undermount", price: "$850.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image.png-QW0ltw0zaOM9pLmhX1eAGhizPMvK34.jpeg" },
+      { name: "Chrome Pull-Down Kitchen Faucet", price: "$320.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-A2DwkI2p0bS1mMVNSJBSFlKgIuIFw5.png" },
     ],
     lighting: [
       { name: "Under-Cabinet LED Strip Kit", price: "$180.00", stock: "In Stock" },
