@@ -572,11 +572,9 @@ function HomePage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
 // ============ ABOUT PAGE ============
 function AboutPage() {
   const teamMembers = [
-    { name: "Michael Lombardi", role: "Project Manager" },
-    { name: "Caitlyn Brenton", role: "Database Developer" },
-    { name: "Connor Polodna", role: "Web Designer" },
-    { name: "Mohammad Shaikh", role: "Cybersecurity Specialist" },
-    { name: "Camden Dreasher", role: "Network Designer" },
+    { name: "Joe Herold", role: "Founder, Owner, and President" },
+    { name: "Emily Herold", role: "Founder, Owner, and VP" },
+    { name: "Doug Plemmons", role: "Part Time IT Support Staff" },
   ]
 
   const locations = [
@@ -657,6 +655,13 @@ function AboutPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+          
+          {/* Team Description */}
+          <div className="mt-8 p-6 bg-[#F0EAE0] border border-[#DDD0C0] rounded-lg text-center">
+            <p className="text-[#8A7060] max-w-2xl mx-auto">
+              Led by Joe and Emily Herold, our team has grown to 39 dedicated professionals across five Southwest locations, including specialized designers, master installers, and logistics experts.
+            </p>
           </div>
         </div>
 
@@ -1220,34 +1225,64 @@ function QuotePage() {
 function FAQPage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
   const faqs = [
     {
-      question: "How long does a typical kitchen or bathroom remodel take?",
+      question: "How much will my cabinets cost?",
       answer:
-        "Project timelines vary from 3–12 weeks depending on scope. HRS provides a detailed timeline during the design phase so you know exactly what to expect.",
+        "Cabinets vary dramatically in price just like cars or houses. Entry-level cabinets are less expensive than cabinets with special finishes and upgraded storage features. HRS provides cabinetry that fits most any budget—from basic to bold.",
     },
     {
-      question: "Do you supply the appliances and fixtures, or do I provide my own?",
+      question: "How long will it take to get the cabinets I order?",
       answer:
-        "HRS can supply everything through our manufacturer partners, or we can work with materials you've sourced independently. Either way, we ensure quality installation.",
+        "Order time varies depending on the manufacturer and the complexity of the job. The minimum time is roughly three weeks and can be as much as eight weeks during peak times of the year.",
     },
     {
-      question: "Do you serve locations outside of Phoenix?",
+      question: "Can you design my kitchen from a sketch of the room that I provide?",
       answer:
-        "Yes — we have locations in Scottsdale, Tucson, Las Vegas, and Albuquerque, serving homeowners throughout the Southwest.",
+        "We can certainly start with a sketch you provide. Your forethought in doing some homework can shorten the time needed to design the final layout. However, we will always do our own measurements to verify that the design will actually work.",
     },
     {
-      question: "How is pricing determined?",
+      question: "What is the best type of countertop for the kitchen?",
       answer:
-        "Pricing is based on scope, materials, and labor. We provide a full itemized quote after an initial consultation at no cost to you.",
+        "There are many possible countertop choices. As with cabinets, your budget needs to be matched with your desire for flexibility of design and product longevity. Laminate, solid surface, quartz-enhanced and granite are all good choices.",
     },
     {
-      question: "Are your installers licensed and insured?",
+      question: "Can you match my existing cabinets or furniture?",
       answer:
-        "Yes — all HRS installation crews are certified kitchen and bath specialists, licensed, and fully insured for your peace of mind.",
+        "All woods and stains change color over time—some more so than others. In many cases, HRS can find cabinetry that may be compatible with your existing cabinets or furniture. In no case can we guarantee an exact match.",
     },
     {
-      question: "Can I browse product catalogs before my consultation?",
+      question: "What construction features should I look for when choosing cabinets?",
       answer:
-        "Absolutely — visit our Manufacturer Partners page to browse current models and specs from all of our brand partners directly.",
+        "Certain construction features are a sign of quality cabinets. A savvy consumer will look for things such as finished backs in all cabinets, drawer guides that also support the drawer bottom, conversion varnish (not lacquer) finishes, multi-way adjustable hinges, adjustable shelves, and a wide range of heights and depths. Newer convenience features include \"soft-close\" hinges and drawers, multi-function drawer systems, and optional task lighting. Be sure to check for the KCMA (Kitchen Cabinet Manufacturers Association) label, a certification that the cabinets meet construction standards designed to ensure many years of trouble-free service.",
+    },
+    {
+      question: "What are the most popular types of cabinets?",
+      answer:
+        "While popular cabinet styles and trends vary from year to year, traditional raised-panel oak styling is always a favorite due to affordability and durability. A current trend is a \"stand-alone\" furniture look that allows for highly customized design features using cabinetry from major manufacturers. Besides oak, certain wood species tend to be favored by today's consumers. Maple is frequently used in remodeling because of its clean look and its ability to blend in with most existing finishes. Cherry has become increasingly popular as manufacturers have developed a variety of finishes allowing it to work in more applications.",
+    },
+    {
+      question: "Are environmentally \"green\" cabinets available at a reasonable price?",
+      answer:
+        "HRS represents several manufacturers across the price spectrum whose cabinets are certified under the Environmental Stewardship Program developed by the KCMA (Kitchen Cabinet Manufacturers Association).",
+    },
+    {
+      question: "What's the difference between manufactured cabinets and custom-made cabinets?",
+      answer:
+        "Years ago there was a significant difference in the sizes and finishes available from \"custom\" cabinetmakers and the \"stock\" manufacturers. Today, many cabinet manufacturers offer custom sizing and finishes that rival, and may even exceed, the possibilities of a local custom cabinet shop.",
+    },
+    {
+      question: "Do you charge a design fee, measure fee or other fees in addition to the contract price for cabinets and installation?",
+      answer:
+        "HRS does not charge a measure fee or a design fee for a first design or estimate. In some cases, where multiple design revisions are requested, a design retainer may be requested. That retainer is then credited in full to the final cost of the job.",
+    },
+    {
+      question: "Do you do major remodeling?",
+      answer:
+        "HRS specializes in \"light\" kitchen, office, or laundry room remodeling. We have strong working relationships with several quality, full-line remodeling firms for those jobs that require major structural renovation.",
+    },
+    {
+      question: "Do you provide cabinets for remodeling only, or also for new construction?",
+      answer:
+        "HRS works with a number of reputable remodelers and can provide cabinets through your contractor or directly to you for your kitchen or bath remodeling project or room addition. We also work with many custom home builders, who consult with our designers to assure that the layouts for kitchen cabinets, bath cabinets, laundry room cabinets and other cabinetry are chosen to properly fit the budget and space. We will coordinate directly with your builder and also consult directly with you.",
     },
   ]
 
