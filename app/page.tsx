@@ -599,9 +599,11 @@ function AboutPage() {
         {/* Founders Story */}
         <div className="grid gap-12 lg:grid-cols-2 mb-20">
           <div className="flex items-center justify-center">
-            <div className="h-80 w-full max-w-md rounded-2xl bg-[#F0EAE0] border border-[#DDD0C0] flex items-center justify-center">
-              <Users className="h-24 w-24 text-[#7C5C3E]/50" />
-            </div>
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-kTWWgMCVrI4ZwANK25HUSR0DqtppDo.png"
+              alt="Joe and Emily Herold, founders of Home Renovation Solutions"
+              className="h-80 w-full max-w-md rounded-2xl object-cover object-center shadow-md"
+            />
           </div>
           <div className="flex flex-col justify-center">
             <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-6">Our Story</h2>
@@ -640,28 +642,99 @@ function AboutPage() {
 
         {/* Team Section */}
         <div className="mb-20">
-          <h2 className="font-serif text-3xl font-bold text-[#2C1A0E] text-center mb-12">
+          <h2 className="font-serif text-3xl font-bold text-[#2C1A0E] text-center mb-4">
             Our Team
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {teamMembers.map((member) => (
-              <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
-                <CardContent className="p-6 text-center">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#7C5C3E]/10">
-                    <Users className="h-10 w-10 text-[#7C5C3E]" />
-                  </div>
-                  <h3 className="font-semibold text-[#2C1A0E]">{member.name}</h3>
-                  <p className="text-sm text-[#8A7060]">{member.role}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Team Description */}
-          <div className="mt-8 p-6 bg-[#F0EAE0] border border-[#DDD0C0] rounded-lg text-center">
-            <p className="text-[#8A7060] max-w-2xl mx-auto">
-              Led by Joe and Emily Herold, our team has grown to 39 dedicated professionals across five Southwest locations, including specialized designers, master installers, and logistics experts.
-            </p>
+          <p className="text-center text-[#8A7060] max-w-2xl mx-auto mb-12">
+            Led by Joe and Emily Herold, our team has grown to 39 dedicated professionals across five Southwest locations, including specialized designers, master installers, and logistics experts.
+          </p>
+
+          {/* Three-column layout: Design Team | Leadership | Renovation Crew */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+            {/* Left — Design and Sales Team */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+                <h3 className="font-serif text-lg font-semibold text-[#7C5C3E] whitespace-nowrap">Design &amp; Sales Team</h3>
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+              </div>
+              <div className="space-y-3">
+                {[
+                  { name: "Sarah Mitchell", role: "Lead Kitchen Designer" },
+                  { name: "Carlos Ruiz", role: "Bath &amp; Tile Specialist" },
+                  { name: "Priya Nair", role: "Interior Design Consultant" },
+                  { name: "James Thornton", role: "Sales &amp; Estimating Lead" },
+                ].map((member) => (
+                  <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5C3E]/10">
+                        <Users className="h-5 w-5 text-[#7C5C3E]" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-[#2C1A0E]">{member.name}</p>
+                        <p className="text-xs text-[#8A7060]" dangerouslySetInnerHTML={{ __html: member.role }} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Center — Leadership (Joe, Emily, Doug) */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-1 flex-1 bg-[#C9973A]/60 rounded" />
+                <h3 className="font-serif text-lg font-semibold text-[#7C5C3E] whitespace-nowrap">Leadership</h3>
+                <div className="h-1 flex-1 bg-[#C9973A]/60 rounded" />
+              </div>
+              <div className="space-y-4">
+                {teamMembers.map((member, idx) => (
+                  <Card
+                    key={member.name}
+                    className={idx < 2 ? "bg-[#7C5C3E] border-[#5C3D20]" : "bg-[#F0EAE0] border-[#DDD0C0]"}
+                  >
+                    <CardContent className="p-5 text-center">
+                      <div className={`mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full ${idx < 2 ? "bg-white/15" : "bg-[#7C5C3E]/10"}`}>
+                        <Users className={`h-8 w-8 ${idx < 2 ? "text-white" : "text-[#7C5C3E]"}`} />
+                      </div>
+                      <h3 className={`font-semibold text-base ${idx < 2 ? "text-white" : "text-[#2C1A0E]"}`}>{member.name}</h3>
+                      <p className={`text-sm mt-1 ${idx < 2 ? "text-[#EDD9A3]" : "text-[#8A7060]"}`}>{member.role}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — Renovation Crew */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+                <h3 className="font-serif text-lg font-semibold text-[#7C5C3E] whitespace-nowrap">Renovation Crew</h3>
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+              </div>
+              <div className="space-y-3">
+                {[
+                  { name: "Derek Walsh", role: "Master Installer" },
+                  { name: "Tomás Guerrero", role: "Cabinetry &amp; Millwork Lead" },
+                  { name: "Linda Park", role: "Tile &amp; Flooring Specialist" },
+                  { name: "Marcus Webb", role: "Logistics &amp; Site Coordinator" },
+                ].map((member) => (
+                  <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5C3E]/10">
+                        <Users className="h-5 w-5 text-[#7C5C3E]" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-[#2C1A0E]">{member.name}</p>
+                        <p className="text-xs text-[#8A7060]" dangerouslySetInnerHTML={{ __html: member.role }} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
 
