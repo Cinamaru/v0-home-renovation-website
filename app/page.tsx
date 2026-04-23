@@ -572,11 +572,9 @@ function HomePage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
 // ============ ABOUT PAGE ============
 function AboutPage() {
   const teamMembers = [
-    { name: "Michael Lombardi", role: "Project Manager" },
-    { name: "Caitlyn Brenton", role: "Database Developer" },
-    { name: "Connor Polodna", role: "Web Designer" },
-    { name: "Mohammad Shaikh", role: "Cybersecurity Specialist" },
-    { name: "Camden Dreasher", role: "Network Designer" },
+    { name: "Joe Herold", role: "Founder, Owner, and President" },
+    { name: "Emily Herold", role: "Founder, Owner, and VP" },
+    { name: "Doug Plemmons", role: "Part Time IT Support Staff" },
   ]
 
   const locations = [
@@ -601,9 +599,11 @@ function AboutPage() {
         {/* Founders Story */}
         <div className="grid gap-12 lg:grid-cols-2 mb-20">
           <div className="flex items-center justify-center">
-            <div className="h-80 w-full max-w-md rounded-2xl bg-[#F0EAE0] border border-[#DDD0C0] flex items-center justify-center">
-              <Users className="h-24 w-24 text-[#7C5C3E]/50" />
-            </div>
+            <img
+              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-kTWWgMCVrI4ZwANK25HUSR0DqtppDo.png"
+              alt="Joe and Emily Herold, founders of Home Renovation Solutions"
+              className="h-80 w-full max-w-md rounded-2xl object-cover object-center shadow-md"
+            />
           </div>
           <div className="flex flex-col justify-center">
             <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-6">Our Story</h2>
@@ -642,21 +642,99 @@ function AboutPage() {
 
         {/* Team Section */}
         <div className="mb-20">
-          <h2 className="font-serif text-3xl font-bold text-[#2C1A0E] text-center mb-12">
+          <h2 className="font-serif text-3xl font-bold text-[#2C1A0E] text-center mb-4">
             Our Team
           </h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            {teamMembers.map((member) => (
-              <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
-                <CardContent className="p-6 text-center">
-                  <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#7C5C3E]/10">
-                    <Users className="h-10 w-10 text-[#7C5C3E]" />
-                  </div>
-                  <h3 className="font-semibold text-[#2C1A0E]">{member.name}</h3>
-                  <p className="text-sm text-[#8A7060]">{member.role}</p>
-                </CardContent>
-              </Card>
-            ))}
+          <p className="text-center text-[#8A7060] max-w-2xl mx-auto mb-12">
+            Led by Joe and Emily Herold, our team has grown to 39 dedicated professionals across five Southwest locations, including specialized designers, master installers, and logistics experts.
+          </p>
+
+          {/* Three-column layout: Design Team | Leadership | Renovation Crew */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+            {/* Left — Design and Sales Team */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+                <h3 className="font-serif text-lg font-semibold text-[#7C5C3E] whitespace-nowrap">Design &amp; Sales Team</h3>
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+              </div>
+              <div className="space-y-3">
+                {[
+                  { name: "Sarah Mitchell", role: "Lead Kitchen Designer" },
+                  { name: "Carlos Ruiz", role: "Bath &amp; Tile Specialist" },
+                  { name: "Priya Nair", role: "Interior Design Consultant" },
+                  { name: "James Thornton", role: "Sales &amp; Estimating Lead" },
+                ].map((member) => (
+                  <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5C3E]/10">
+                        <Users className="h-5 w-5 text-[#7C5C3E]" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-[#2C1A0E]">{member.name}</p>
+                        <p className="text-xs text-[#8A7060]" dangerouslySetInnerHTML={{ __html: member.role }} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Center — Leadership (Joe, Emily, Doug) */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-1 flex-1 bg-[#C9973A]/60 rounded" />
+                <h3 className="font-serif text-lg font-semibold text-[#7C5C3E] whitespace-nowrap">Leadership</h3>
+                <div className="h-1 flex-1 bg-[#C9973A]/60 rounded" />
+              </div>
+              <div className="space-y-4">
+                {teamMembers.map((member, idx) => (
+                  <Card
+                    key={member.name}
+                    className={idx < 2 ? "bg-[#7C5C3E] border-[#5C3D20]" : "bg-[#F0EAE0] border-[#DDD0C0]"}
+                  >
+                    <CardContent className="p-5 text-center">
+                      <div className={`mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full ${idx < 2 ? "bg-white/15" : "bg-[#7C5C3E]/10"}`}>
+                        <Users className={`h-8 w-8 ${idx < 2 ? "text-white" : "text-[#7C5C3E]"}`} />
+                      </div>
+                      <h3 className={`font-semibold text-base ${idx < 2 ? "text-white" : "text-[#2C1A0E]"}`}>{member.name}</h3>
+                      <p className={`text-sm mt-1 ${idx < 2 ? "text-[#EDD9A3]" : "text-[#8A7060]"}`}>{member.role}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — Renovation Crew */}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+                <h3 className="font-serif text-lg font-semibold text-[#7C5C3E] whitespace-nowrap">Renovation Crew</h3>
+                <div className="h-1 flex-1 bg-[#C9973A]/40 rounded" />
+              </div>
+              <div className="space-y-3">
+                {[
+                  { name: "Derek Walsh", role: "Master Installer" },
+                  { name: "Tomás Guerrero", role: "Cabinetry &amp; Millwork Lead" },
+                  { name: "Linda Park", role: "Tile &amp; Flooring Specialist" },
+                  { name: "Marcus Webb", role: "Logistics &amp; Site Coordinator" },
+                ].map((member) => (
+                  <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
+                    <CardContent className="p-4 flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#7C5C3E]/10">
+                        <Users className="h-5 w-5 text-[#7C5C3E]" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-sm text-[#2C1A0E]">{member.name}</p>
+                        <p className="text-xs text-[#8A7060]" dangerouslySetInnerHTML={{ __html: member.role }} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -840,24 +918,24 @@ function ProductsPage({
 
   const products = {
     cabinets: [
-      { name: "42-inch Shaker Cabinet Set – White", price: "$1,299.00", stock: "In Stock" },
-      { name: "Deluxe Oak Cabinet Kit", price: "$4,500.00", stock: "In Stock" },
-      { name: "Farmhouse Base Cabinet – Walnut", price: "$2,100.00", stock: "Low Stock" },
+      { name: "42-inch Shaker Cabinet Set – White", price: "$1,299.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-oBjtmZmlwblIwgOm7HCeVBTBM4lcsT.png" },
+      { name: "Deluxe Oak Cabinet Kit", price: "$4,500.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-7ZaeKYZfeTMWiWkLJuqWlpsNwN5P6v.png" },
+      { name: "Farmhouse Base Cabinet – Walnut", price: "$2,100.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BgclTP87kqrPzQVe98nRfijKVkeVD2.png" },
     ],
     appliances: [
-      { name: "Stainless Steel Range – 36 inch", price: "$2,800.00", stock: "In Stock" },
-      { name: "Built-in Dishwasher – Premium Series", price: "$1,100.00", stock: "In Stock" },
-      { name: "French Door Refrigerator", price: "$2,200.00", stock: "Low Stock" },
+      { name: "Stainless Steel Range – 36 inch", price: "$2,800.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YNYnPwhuPtt8tzXTLwKN36CzJhxcwg.png" },
+      { name: "Built-in Dishwasher – Premium Series", price: "$1,100.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-TqJUuDpLoSbsqmmaoq2hLiB27SdRYy.png" },
+      { name: "French Door Refrigerator", price: "$2,200.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-cNa6eKWSNrsen0PLnkilzf0HPcmiqD.png" },
     ],
     sinks: [
-      { name: "Stainless Steel Farmhouse Sink (Large)", price: "$549.00", stock: "In Stock" },
-      { name: "Granite Double Sink – Undermount", price: "$850.00", stock: "In Stock" },
-      { name: "Chrome Pull-Down Kitchen Faucet", price: "$320.00", stock: "In Stock" },
+      { name: "Stainless Steel Farmhouse Sink (Large)", price: "$549.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-T2RNgj9HqoTuDgUeUpn06mrCWHSylG.png" },
+      { name: "Granite Double Sink – Undermount", price: "$850.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image.png-QW0ltw0zaOM9pLmhX1eAGhizPMvK34.jpeg" },
+      { name: "Chrome Pull-Down Kitchen Faucet", price: "$320.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-A2DwkI2p0bS1mMVNSJBSFlKgIuIFw5.png" },
     ],
     lighting: [
-      { name: "Under-Cabinet LED Strip Kit", price: "$180.00", stock: "In Stock" },
-      { name: "Pendant Light Set – Brushed Bronze (3-pack)", price: "$440.00", stock: "In Stock" },
-      { name: "Recessed Lighting Kit – 6 pack", price: "$290.00", stock: "In Stock" },
+      { name: "Under-Cabinet LED Strip Kit", price: "$180.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ieCJgfQo7YaSsMR1n73LpzgBS14ntF.png" },
+      { name: "Pendant Light Set – Brushed Bronze (3-pack)", price: "$440.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-fkPHEax47KAwjOskZbY4nYg2G0yD3X.png" },
+      { name: "Recessed Lighting Kit – 6 pack", price: "$290.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GI566smeTSQ6TsVaa8CGFOO0XFCWxv.png" },
     ],
   }
 
@@ -901,8 +979,16 @@ function ProductsPage({
           {products[category].map((product) => (
             <Card key={product.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
               <CardContent className="p-6">
-                <div className="flex h-40 items-center justify-center rounded-lg bg-[#FAF7F2] mb-4">
-                  <Package className="h-16 w-16 text-[#7C5C3E]/50" />
+                <div className="flex h-40 items-center justify-center rounded-lg bg-[#FAF7F2] mb-4 overflow-hidden">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <Package className="h-16 w-16 text-[#7C5C3E]/50" />
+                  )}
                 </div>
                 <h3 className="font-semibold text-[#2C1A0E] mb-2">{product.name}</h3>
                 <p className="text-xl font-bold text-[#7C5C3E] mb-3">{product.price}</p>
@@ -1035,14 +1121,45 @@ function PartnersPage({ navigateTo }: { navigateTo: (page: PageView) => void }) 
 // ============ PORTFOLIO PAGE ============
 function PortfolioPage() {
   const [filter, setFilter] = useState("all")
+  const [selectedImage, setSelectedImage] = useState<{ title: string; image: string } | null>(null)
 
   const projects = [
-    { title: "Scottsdale Kitchen Remodel", category: "kitchens", icon: ChefHat },
-    { title: "Las Vegas Master Bath", category: "bathrooms", icon: Bath },
-    { title: "Phoenix Custom Cabinets", category: "custom", icon: Package },
-    { title: "Tucson Kitchen & Lighting", category: "kitchens", icon: Lamp },
-    { title: "Albuquerque Bathroom Renovation", category: "bathrooms", icon: Droplets },
-    { title: "Scottsdale Full Kitchen", category: "kitchens", icon: UtensilsCrossed },
+    { 
+      title: "Scottsdale Kitchen Remodel", 
+      category: "kitchens", 
+      icon: ChefHat,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-veg1tHpBnpbSpIeDWKTO0OWEVmvbhJ.png"
+    },
+    { 
+      title: "Las Vegas Master Bath", 
+      category: "bathrooms", 
+      icon: Bath,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-CMG3nvaNZJMRTLGl9JPJL0UxRsYnU0.png"
+    },
+    { 
+      title: "Phoenix Custom Cabinets", 
+      category: "custom", 
+      icon: Package,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ah6ugoFAeNxeaiEBiNsHjtB8Ne56vF.png"
+    },
+    { 
+      title: "Tucson Kitchen & Lighting", 
+      category: "kitchens", 
+      icon: Lamp,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GjJFPUX3g1lcVzm1rvSPDemaJaEDME.png"
+    },
+    { 
+      title: "Albuquerque Bathroom Renovation", 
+      category: "bathrooms", 
+      icon: Droplets,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-usprJtCQddMjR8f51sjn8sanVZZkCL.png"
+    },
+    { 
+      title: "Scottsdale Full Kitchen", 
+      category: "kitchens", 
+      icon: UtensilsCrossed,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-r7UVdebacLLYukLaVLItHChqVW70kX.png"
+    },
   ]
 
   const filteredProjects =
@@ -1086,23 +1203,57 @@ function PortfolioPage() {
         {/* Gallery Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
-            <div
+            <button
               key={project.title}
-              className="group relative overflow-hidden rounded-2xl bg-[#F0EAE0] border border-[#DDD0C0] cursor-pointer"
+              onClick={() => setSelectedImage({ title: project.title, image: project.image })}
+              className="group relative overflow-hidden rounded-2xl bg-[#F0EAE0] border border-[#DDD0C0] cursor-pointer text-left"
             >
-              <div className="aspect-[4/3] flex items-center justify-center">
-                <project.icon className="h-20 w-20 text-[#7C5C3E]/30 transition-transform group-hover:scale-110" />
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
-              <div className="absolute inset-0 bg-[#7C5C3E]/0 group-hover:bg-[#7C5C3E]/80 transition-all flex items-center justify-center">
-                <ZoomIn className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-[#7C5C3E]/0 group-hover:bg-[#7C5C3E]/40 transition-all flex items-center justify-center">
+                <ZoomIn className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C1A0E]/90 to-transparent p-4">
                 <p className="text-white font-medium">{project.title}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 text-white hover:text-[#C9973A] transition-colors"
+            aria-label="Close lightbox"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <div
+            className="relative max-w-5xl max-h-[90vh] w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedImage.image}
+              alt={selectedImage.title}
+              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+            />
+            <p className="mt-4 text-center text-white text-lg font-medium">
+              {selectedImage.title}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1220,34 +1371,64 @@ function QuotePage() {
 function FAQPage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
   const faqs = [
     {
-      question: "How long does a typical kitchen or bathroom remodel take?",
+      question: "How much will my cabinets cost?",
       answer:
-        "Project timelines vary from 3–12 weeks depending on scope. HRS provides a detailed timeline during the design phase so you know exactly what to expect.",
+        "Cabinets vary dramatically in price just like cars or houses. Entry-level cabinets are less expensive than cabinets with special finishes and upgraded storage features. HRS provides cabinetry that fits most any budget—from basic to bold.",
     },
     {
-      question: "Do you supply the appliances and fixtures, or do I provide my own?",
+      question: "How long will it take to get the cabinets I order?",
       answer:
-        "HRS can supply everything through our manufacturer partners, or we can work with materials you've sourced independently. Either way, we ensure quality installation.",
+        "Order time varies depending on the manufacturer and the complexity of the job. The minimum time is roughly three weeks and can be as much as eight weeks during peak times of the year.",
     },
     {
-      question: "Do you serve locations outside of Phoenix?",
+      question: "Can you design my kitchen from a sketch of the room that I provide?",
       answer:
-        "Yes — we have locations in Scottsdale, Tucson, Las Vegas, and Albuquerque, serving homeowners throughout the Southwest.",
+        "We can certainly start with a sketch you provide. Your forethought in doing some homework can shorten the time needed to design the final layout. However, we will always do our own measurements to verify that the design will actually work.",
     },
     {
-      question: "How is pricing determined?",
+      question: "What is the best type of countertop for the kitchen?",
       answer:
-        "Pricing is based on scope, materials, and labor. We provide a full itemized quote after an initial consultation at no cost to you.",
+        "There are many possible countertop choices. As with cabinets, your budget needs to be matched with your desire for flexibility of design and product longevity. Laminate, solid surface, quartz-enhanced and granite are all good choices.",
     },
     {
-      question: "Are your installers licensed and insured?",
+      question: "Can you match my existing cabinets or furniture?",
       answer:
-        "Yes — all HRS installation crews are certified kitchen and bath specialists, licensed, and fully insured for your peace of mind.",
+        "All woods and stains change color over time—some more so than others. In many cases, HRS can find cabinetry that may be compatible with your existing cabinets or furniture. In no case can we guarantee an exact match.",
     },
     {
-      question: "Can I browse product catalogs before my consultation?",
+      question: "What construction features should I look for when choosing cabinets?",
       answer:
-        "Absolutely — visit our Manufacturer Partners page to browse current models and specs from all of our brand partners directly.",
+        "Certain construction features are a sign of quality cabinets. A savvy consumer will look for things such as finished backs in all cabinets, drawer guides that also support the drawer bottom, conversion varnish (not lacquer) finishes, multi-way adjustable hinges, adjustable shelves, and a wide range of heights and depths. Newer convenience features include \"soft-close\" hinges and drawers, multi-function drawer systems, and optional task lighting. Be sure to check for the KCMA (Kitchen Cabinet Manufacturers Association) label, a certification that the cabinets meet construction standards designed to ensure many years of trouble-free service.",
+    },
+    {
+      question: "What are the most popular types of cabinets?",
+      answer:
+        "While popular cabinet styles and trends vary from year to year, traditional raised-panel oak styling is always a favorite due to affordability and durability. A current trend is a \"stand-alone\" furniture look that allows for highly customized design features using cabinetry from major manufacturers. Besides oak, certain wood species tend to be favored by today's consumers. Maple is frequently used in remodeling because of its clean look and its ability to blend in with most existing finishes. Cherry has become increasingly popular as manufacturers have developed a variety of finishes allowing it to work in more applications.",
+    },
+    {
+      question: "Are environmentally \"green\" cabinets available at a reasonable price?",
+      answer:
+        "HRS represents several manufacturers across the price spectrum whose cabinets are certified under the Environmental Stewardship Program developed by the KCMA (Kitchen Cabinet Manufacturers Association).",
+    },
+    {
+      question: "What's the difference between manufactured cabinets and custom-made cabinets?",
+      answer:
+        "Years ago there was a significant difference in the sizes and finishes available from \"custom\" cabinetmakers and the \"stock\" manufacturers. Today, many cabinet manufacturers offer custom sizing and finishes that rival, and may even exceed, the possibilities of a local custom cabinet shop.",
+    },
+    {
+      question: "Do you charge a design fee, measure fee or other fees in addition to the contract price for cabinets and installation?",
+      answer:
+        "HRS does not charge a measure fee or a design fee for a first design or estimate. In some cases, where multiple design revisions are requested, a design retainer may be requested. That retainer is then credited in full to the final cost of the job.",
+    },
+    {
+      question: "Do you do major remodeling?",
+      answer:
+        "HRS specializes in \"light\" kitchen, office, or laundry room remodeling. We have strong working relationships with several quality, full-line remodeling firms for those jobs that require major structural renovation.",
+    },
+    {
+      question: "Do you provide cabinets for remodeling only, or also for new construction?",
+      answer:
+        "HRS works with a number of reputable remodelers and can provide cabinets through your contractor or directly to you for your kitchen or bath remodeling project or room addition. We also work with many custom home builders, who consult with our designers to assure that the layouts for kitchen cabinets, bath cabinets, laundry room cabinets and other cabinetry are chosen to properly fit the budget and space. We will coordinate directly with your builder and also consult directly with you.",
     },
   ]
 
