@@ -1113,14 +1113,45 @@ function PartnersPage({ navigateTo }: { navigateTo: (page: PageView) => void }) 
 // ============ PORTFOLIO PAGE ============
 function PortfolioPage() {
   const [filter, setFilter] = useState("all")
+  const [selectedImage, setSelectedImage] = useState<{ title: string; image: string } | null>(null)
 
   const projects = [
-    { title: "Scottsdale Kitchen Remodel", category: "kitchens", icon: ChefHat },
-    { title: "Las Vegas Master Bath", category: "bathrooms", icon: Bath },
-    { title: "Phoenix Custom Cabinets", category: "custom", icon: Package },
-    { title: "Tucson Kitchen & Lighting", category: "kitchens", icon: Lamp },
-    { title: "Albuquerque Bathroom Renovation", category: "bathrooms", icon: Droplets },
-    { title: "Scottsdale Full Kitchen", category: "kitchens", icon: UtensilsCrossed },
+    { 
+      title: "Scottsdale Kitchen Remodel", 
+      category: "kitchens", 
+      icon: ChefHat,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-veg1tHpBnpbSpIeDWKTO0OWEVmvbhJ.png"
+    },
+    { 
+      title: "Las Vegas Master Bath", 
+      category: "bathrooms", 
+      icon: Bath,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-CMG3nvaNZJMRTLGl9JPJL0UxRsYnU0.png"
+    },
+    { 
+      title: "Phoenix Custom Cabinets", 
+      category: "custom", 
+      icon: Package,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ah6ugoFAeNxeaiEBiNsHjtB8Ne56vF.png"
+    },
+    { 
+      title: "Tucson Kitchen & Lighting", 
+      category: "kitchens", 
+      icon: Lamp,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GjJFPUX3g1lcVzm1rvSPDemaJaEDME.png"
+    },
+    { 
+      title: "Albuquerque Bathroom Renovation", 
+      category: "bathrooms", 
+      icon: Droplets,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-usprJtCQddMjR8f51sjn8sanVZZkCL.png"
+    },
+    { 
+      title: "Scottsdale Full Kitchen", 
+      category: "kitchens", 
+      icon: UtensilsCrossed,
+      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-r7UVdebacLLYukLaVLItHChqVW70kX.png"
+    },
   ]
 
   const filteredProjects =
@@ -1164,23 +1195,57 @@ function PortfolioPage() {
         {/* Gallery Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
-            <div
+            <button
               key={project.title}
-              className="group relative overflow-hidden rounded-2xl bg-[#F0EAE0] border border-[#DDD0C0] cursor-pointer"
+              onClick={() => setSelectedImage({ title: project.title, image: project.image })}
+              className="group relative overflow-hidden rounded-2xl bg-[#F0EAE0] border border-[#DDD0C0] cursor-pointer text-left"
             >
-              <div className="aspect-[4/3] flex items-center justify-center">
-                <project.icon className="h-20 w-20 text-[#7C5C3E]/30 transition-transform group-hover:scale-110" />
+              <div className="aspect-[4/3] overflow-hidden">
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
-              <div className="absolute inset-0 bg-[#7C5C3E]/0 group-hover:bg-[#7C5C3E]/80 transition-all flex items-center justify-center">
-                <ZoomIn className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-[#7C5C3E]/0 group-hover:bg-[#7C5C3E]/40 transition-all flex items-center justify-center">
+                <ZoomIn className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" />
               </div>
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#2C1A0E]/90 to-transparent p-4">
                 <p className="text-white font-medium">{project.title}</p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute top-4 right-4 text-white hover:text-[#C9973A] transition-colors"
+            aria-label="Close lightbox"
+          >
+            <X className="h-8 w-8" />
+          </button>
+          <div
+            className="relative max-w-5xl max-h-[90vh] w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={selectedImage.image}
+              alt={selectedImage.title}
+              className="w-full h-auto max-h-[85vh] object-contain rounded-lg"
+            />
+            <p className="mt-4 text-center text-white text-lg font-medium">
+              {selectedImage.title}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
