@@ -3401,8 +3401,7 @@ function LocationPage({
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => navigateTo("cabinets")}
-              variant="outline"
-              className="border-white text-white hover:bg-white hover:text-[#7C5C3E]"
+              className="bg-[#7C5C3E] text-white hover:bg-white hover:text-[#7C5C3E]"
             >
               Browse Products
             </Button>
