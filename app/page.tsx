@@ -25,6 +25,23 @@ import {
   Refrigerator,
   ChevronRight,
   FileText,
+  ShoppingCart,
+  Trash2,
+  AlertCircle,
+  Check,
+  CreditCard,
+  Mail,
+  Clock,
+  AlertTriangle,
+  CalendarCheck,
+  Sun,
+  Coffee,
+  HelpCircle,
+  Lightbulb,
+  Layers,
+  Zap,
+  Map,
+  User,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -70,40 +87,116 @@ type PageView =
   | "catalog-lightsource"
   | "catalog-stoneworks"
   | "catalog-fixtureplus"
+  | "checkout"
+  | "locations"
+  | "location-phoenix"
+  | "location-scottsdale"
+  | "location-tucson"
+  | "location-las-vegas"
+  | "location-albuquerque"
+
+interface CartItem {
+  id: string
+  name: string
+  sku: string
+  price: number
+  qty: number
+  category: string
+  source: "product" | "catalog"
+}
 
 export default function HRSWebsite() {
   const [currentPage, setCurrentPage] = useState<PageView>("home")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [cartOpen, setCartOpen] = useState(false)
+  const [consultationLocation, setConsultationLocation] = useState<string | null>(null)
 
   const navigateTo = (page: PageView) => {
     setCurrentPage(page)
     setMobileMenuOpen(false)
+    setCartOpen(false)
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const addToCart = (item: Omit<CartItem, "qty">) => {
+    setCartItems((prev) => {
+      const existing = prev.find((i) => i.id === item.id)
+      if (existing) {
+        return prev.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i))
+      }
+      return [...prev, { ...item, qty: 1 }]
+    })
+    setCartOpen(true)
+  }
+
+  const updateCartQty = (id: string, delta: number) => {
+    setCartItems((prev) =>
+      prev
+        .map((i) => (i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i))
+        .filter((i) => i.qty > 0)
+    )
+  }
+
+  const removeFromCart = (id: string) => {
+    setCartItems((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  const clearCart = () => {
+    setCartItems([])
+  }
+
+  const cartTotal = cartItems.reduce((sum, i) => sum + i.price * i.qty, 0)
+  const cartCount = cartItems.reduce((sum, i) => sum + i.qty, 0)
+
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
-      <Header currentPage={currentPage} navigateTo={navigateTo} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+      <Header 
+        currentPage={currentPage} 
+        navigateTo={navigateTo} 
+        mobileMenuOpen={mobileMenuOpen} 
+        setMobileMenuOpen={setMobileMenuOpen}
+        cartCount={cartCount}
+        setCartOpen={setCartOpen}
+      />
       <main>
         {currentPage === "home" && <HomePage navigateTo={navigateTo} />}
         {currentPage === "about" && <AboutPage />}
         {currentPage === "services" && <ServicesPage />}
-        {currentPage === "cabinets" && <ProductsPage category="cabinets" navigateTo={navigateTo} />}
-        {currentPage === "appliances" && <ProductsPage category="appliances" navigateTo={navigateTo} />}
-        {currentPage === "sinks" && <ProductsPage category="sinks" navigateTo={navigateTo} />}
-        {currentPage === "lighting" && <ProductsPage category="lighting" navigateTo={navigateTo} />}
+        {currentPage === "cabinets" && <ProductsPage category="cabinets" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "appliances" && <ProductsPage category="appliances" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "sinks" && <ProductsPage category="sinks" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "lighting" && <ProductsPage category="lighting" navigateTo={navigateTo} addToCart={addToCart} />}
         {currentPage === "partners" && <PartnersPage navigateTo={navigateTo} />}
         {currentPage === "portfolio" && <PortfolioPage />}
-        {currentPage === "quote" && <QuotePage />}
+        {currentPage === "quote" && <ConsultationScheduler navigateTo={navigateTo} preselectedLocation={consultationLocation} />}
         {currentPage === "faq" && <FAQPage navigateTo={navigateTo} />}
-        {currentPage === "catalog-cabinetcraft" && <CatalogPage partner="cabinetcraft" navigateTo={navigateTo} />}
-        {currentPage === "catalog-appliancepro" && <CatalogPage partner="appliancepro" navigateTo={navigateTo} />}
-        {currentPage === "catalog-sinkworks" && <CatalogPage partner="sinkworks" navigateTo={navigateTo} />}
-        {currentPage === "catalog-lightsource" && <CatalogPage partner="lightsource" navigateTo={navigateTo} />}
-        {currentPage === "catalog-stoneworks" && <CatalogPage partner="stoneworks" navigateTo={navigateTo} />}
-        {currentPage === "catalog-fixtureplus" && <CatalogPage partner="fixtureplus" navigateTo={navigateTo} />}
+        {currentPage === "catalog-cabinetcraft" && <CatalogPage partner="cabinetcraft" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "catalog-appliancepro" && <CatalogPage partner="appliancepro" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "catalog-sinkworks" && <CatalogPage partner="sinkworks" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "catalog-lightsource" && <CatalogPage partner="lightsource" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "catalog-stoneworks" && <CatalogPage partner="stoneworks" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "catalog-fixtureplus" && <CatalogPage partner="fixtureplus" navigateTo={navigateTo} addToCart={addToCart} />}
+        {currentPage === "checkout" && <CheckoutPage navigateTo={navigateTo} cartItems={cartItems} cartTotal={cartTotal} updateCartQty={updateCartQty} clearCart={clearCart} />}
+        {currentPage === "locations" && <LocationsPage navigateTo={navigateTo} />}
+        {currentPage === "location-phoenix" && <LocationDetailPage city="phoenix" navigateTo={navigateTo} setConsultationLocation={setConsultationLocation} />}
+        {currentPage === "location-scottsdale" && <LocationDetailPage city="scottsdale" navigateTo={navigateTo} setConsultationLocation={setConsultationLocation} />}
+        {currentPage === "location-tucson" && <LocationDetailPage city="tucson" navigateTo={navigateTo} setConsultationLocation={setConsultationLocation} />}
+        {currentPage === "location-las-vegas" && <LocationDetailPage city="las-vegas" navigateTo={navigateTo} setConsultationLocation={setConsultationLocation} />}
+        {currentPage === "location-albuquerque" && <LocationDetailPage city="albuquerque" navigateTo={navigateTo} setConsultationLocation={setConsultationLocation} />}
       </main>
       <Footer navigateTo={navigateTo} />
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        cartItems={cartItems}
+        cartTotal={cartTotal}
+        updateCartQty={updateCartQty}
+        removeFromCart={removeFromCart}
+        navigateTo={navigateTo}
+      />
     </div>
   )
 }
@@ -114,11 +207,15 @@ function Header({
   navigateTo,
   mobileMenuOpen,
   setMobileMenuOpen,
+  cartCount,
+  setCartOpen,
 }: {
   currentPage: PageView
   navigateTo: (page: PageView) => void
   mobileMenuOpen: boolean
   setMobileMenuOpen: (open: boolean) => void
+  cartCount: number
+  setCartOpen: (open: boolean) => void
 }) {
   const [scrolled, setScrolled] = useState(false)
 
@@ -134,6 +231,7 @@ function Header({
     { label: "Services", page: "services" },
     { label: "Manufacturer Partners", page: "partners" },
     { label: "Portfolio / Gallery", page: "portfolio" },
+    { label: "Locations", page: "locations" },
     { label: "FAQ", page: "faq" },
   ]
 
@@ -145,6 +243,7 @@ function Header({
   ]
 
   const isProductPage = ["cabinets", "appliances", "sinks", "lighting"].includes(currentPage)
+  const isLocationPage = currentPage.startsWith("location")
 
   return (
     <header
@@ -228,7 +327,20 @@ function Header({
         </nav>
 
         {/* Right Side */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {/* Cart Icon */}
+          <button
+            onClick={() => setCartOpen(true)}
+            className="relative p-2 text-[#2C1A0E] hover:text-[#7C5C3E] transition-colors"
+            aria-label="Open cart"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#7C5C3E] text-xs text-white font-medium">
+                {cartCount > 9 ? "9+" : cartCount}
+              </span>
+            )}
+          </button>
           <a
             href="tel:602-KITCHEN"
             className="hidden md:flex items-center gap-1 text-sm text-[#8A7060]"
@@ -483,18 +595,19 @@ function HomePage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
               directly — no phone call required.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {[
               { label: "CabinetCo", view: "catalog-cabinetcraft" as PageView },
               { label: "AppliancePro", view: "catalog-appliancepro" as PageView },
               { label: "SinkWorks", view: "catalog-sinkworks" as PageView },
               { label: "LightSource", view: "catalog-lightsource" as PageView },
               { label: "StoneWorks", view: "catalog-stoneworks" as PageView },
+              { label: "FixturePlus", view: "catalog-fixtureplus" as PageView },
             ].map((brand) => (
               <button
                 key={brand.label}
                 onClick={() => navigateTo(brand.view)}
-                className="flex-shrink-0 w-48 cursor-pointer"
+                className="cursor-pointer w-full"
               >
                 <Card className="bg-[#F0EAE0] border-[#DDD0C0] hover:shadow-lg hover:-translate-y-1 transition-all">
                   <CardContent className="flex flex-col items-center justify-center p-6">
@@ -881,10 +994,30 @@ function ServicesPage() {
 function ProductsPage({
   category,
   navigateTo,
+  addToCart,
 }: {
   category: "cabinets" | "appliances" | "sinks" | "lighting"
   navigateTo: (page: PageView) => void
+  addToCart: (item: Omit<CartItem, "qty">) => void
 }) {
+  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({})
+
+  const handleAddToCart = (product: { name: string; price: string; stock: string; image?: string }) => {
+    const priceNum = parseFloat(product.price.replace(/[$,]/g, ""))
+    const sku = product.name.substring(0, 3).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase()
+    addToCart({
+      id: `${category}-${product.name}`,
+      name: product.name,
+      sku,
+      price: priceNum,
+      category: category.charAt(0).toUpperCase() + category.slice(1),
+      source: "product",
+    })
+    setAddedItems((prev) => ({ ...prev, [product.name]: true }))
+    setTimeout(() => {
+      setAddedItems((prev) => ({ ...prev, [product.name]: false }))
+    }, 1500)
+  }
   const categories = [
     { id: "cabinets", label: "Cabinets" },
     { id: "appliances", label: "Appliances" },
@@ -1003,13 +1136,38 @@ function ProductsPage({
                 >
                   {product.stock}
                 </Badge>
-                <Button
-                  variant="outline"
-                  className="w-full border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
-                  onClick={() => navigateTo("quote")}
-                >
-                  Request a Quote
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    className={cn(
+                      "w-full flex items-center justify-center gap-2",
+                      addedItems[product.name]
+                        ? "bg-green-600 hover:bg-green-700 text-white"
+                        : "bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+                    )}
+                    onClick={() => handleAddToCart(product)}
+                    disabled={addedItems[product.name]}
+                  >
+                    {addedItems[product.name] ? (
+                      <>
+                        <Check className="h-4 w-4" />
+                        Added!
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-4 w-4" />
+                        Add to Cart
+                        {product.stock === "Low Stock" && <AlertCircle className="h-4 w-4 ml-1" />}
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
+                    onClick={() => navigateTo("quote")}
+                  >
+                    Request a Quote
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
