@@ -25,6 +25,24 @@ import {
   Refrigerator,
   ChevronRight,
   FileText,
+  ShoppingCart,
+  Trash2,
+  Plus,
+  Minus,
+  CreditCard,
+  Mail,
+  AlertTriangle,
+  Clock,
+  Check,
+  AlertCircle,
+  CalendarCheck,
+  HelpCircle,
+  Lightbulb,
+  Zap,
+  Layers,
+  Sun,
+  Coffee,
+  Map,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -50,6 +68,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 
 type PageView =
@@ -70,10 +90,30 @@ type PageView =
   | "catalog-lightsource"
   | "catalog-stoneworks"
   | "catalog-fixtureplus"
+  | "checkout"
+  | "locations"
+  | "location-phoenix"
+  | "location-scottsdale"
+  | "location-tucson"
+  | "location-las-vegas"
+  | "location-albuquerque"
+
+interface CartItem {
+  id: string
+  name: string
+  sku: string
+  price: number
+  qty: number
+  category: string
+  source: "product" | "catalog"
+}
 
 export default function HRSWebsite() {
   const [currentPage, setCurrentPage] = useState<PageView>("home")
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [cartOpen, setCartOpen] = useState(false)
+  const [preselectedLocation, setPreselectedLocation] = useState<string | null>(null)
 
   const navigateTo = (page: PageView) => {
     setCurrentPage(page)
@@ -81,29 +121,154 @@ export default function HRSWebsite() {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
+  const addToCart = (item: Omit<CartItem, "qty">) => {
+    setCartItems((prev) => {
+      const existing = prev.find((i) => i.id === item.id)
+      if (existing) {
+        return prev.map((i) => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i))
+      }
+      return [...prev, { ...item, qty: 1 }]
+    })
+    setCartOpen(true)
+  }
+
+  const updateQty = (id: string, delta: number) => {
+    setCartItems((prev) =>
+      prev
+        .map((i) => (i.id === id ? { ...i, qty: Math.max(1, i.qty + delta) } : i))
+        .filter((i) => i.qty > 0)
+    )
+  }
+
+  const removeFromCart = (id: string) => {
+    setCartItems((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  const clearCart = () => {
+    setCartItems([])
+  }
+
+  const cartTotal = cartItems.reduce((sum, item) => sum + item.price * item.qty, 0)
+  const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0)
+
+  const navigateToQuoteWithLocation = (locationId: string) => {
+    setPreselectedLocation(locationId)
+    navigateTo("quote")
+  }
+
   return (
     <div className="min-h-screen bg-[#FAF7F2]">
-      <Header currentPage={currentPage} navigateTo={navigateTo} mobileMenuOpen={mobileMenuOpen} setMobileMenuOpen={setMobileMenuOpen} />
+      <Header
+        currentPage={currentPage}
+        navigateTo={navigateTo}
+        mobileMenuOpen={mobileMenuOpen}
+        setMobileMenuOpen={setMobileMenuOpen}
+        cartCount={cartCount}
+        setCartOpen={setCartOpen}
+      />
       <main>
         {currentPage === "home" && <HomePage navigateTo={navigateTo} />}
         {currentPage === "about" && <AboutPage />}
         {currentPage === "services" && <ServicesPage />}
-        {currentPage === "cabinets" && <ProductsPage category="cabinets" navigateTo={navigateTo} />}
-        {currentPage === "appliances" && <ProductsPage category="appliances" navigateTo={navigateTo} />}
-        {currentPage === "sinks" && <ProductsPage category="sinks" navigateTo={navigateTo} />}
-        {currentPage === "lighting" && <ProductsPage category="lighting" navigateTo={navigateTo} />}
+        {currentPage === "cabinets" && (
+          <ProductsPage category="cabinets" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "appliances" && (
+          <ProductsPage category="appliances" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "sinks" && (
+          <ProductsPage category="sinks" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "lighting" && (
+          <ProductsPage category="lighting" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
         {currentPage === "partners" && <PartnersPage navigateTo={navigateTo} />}
         {currentPage === "portfolio" && <PortfolioPage />}
-        {currentPage === "quote" && <QuotePage />}
+        {currentPage === "quote" && (
+          <ConsultationScheduler
+            navigateTo={navigateTo}
+            preselectedLocation={preselectedLocation}
+            clearPreselectedLocation={() => setPreselectedLocation(null)}
+          />
+        )}
         {currentPage === "faq" && <FAQPage navigateTo={navigateTo} />}
-        {currentPage === "catalog-cabinetcraft" && <CatalogPage partner="cabinetcraft" navigateTo={navigateTo} />}
-        {currentPage === "catalog-appliancepro" && <CatalogPage partner="appliancepro" navigateTo={navigateTo} />}
-        {currentPage === "catalog-sinkworks" && <CatalogPage partner="sinkworks" navigateTo={navigateTo} />}
-        {currentPage === "catalog-lightsource" && <CatalogPage partner="lightsource" navigateTo={navigateTo} />}
-        {currentPage === "catalog-stoneworks" && <CatalogPage partner="stoneworks" navigateTo={navigateTo} />}
-        {currentPage === "catalog-fixtureplus" && <CatalogPage partner="fixtureplus" navigateTo={navigateTo} />}
+        {currentPage === "catalog-cabinetcraft" && (
+          <CatalogPage partner="cabinetcraft" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "catalog-appliancepro" && (
+          <CatalogPage partner="appliancepro" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "catalog-sinkworks" && (
+          <CatalogPage partner="sinkworks" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "catalog-lightsource" && (
+          <CatalogPage partner="lightsource" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "catalog-stoneworks" && (
+          <CatalogPage partner="stoneworks" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "catalog-fixtureplus" && (
+          <CatalogPage partner="fixtureplus" navigateTo={navigateTo} addToCart={addToCart} />
+        )}
+        {currentPage === "checkout" && (
+          <CheckoutPage
+            cartItems={cartItems}
+            cartTotal={cartTotal}
+            updateQty={updateQty}
+            clearCart={clearCart}
+            navigateTo={navigateTo}
+            setCartOpen={setCartOpen}
+          />
+        )}
+        {currentPage === "locations" && <LocationsHub navigateTo={navigateTo} />}
+        {currentPage === "location-phoenix" && (
+          <LocationPage
+            city="phoenix"
+            navigateTo={navigateTo}
+            navigateToQuoteWithLocation={navigateToQuoteWithLocation}
+          />
+        )}
+        {currentPage === "location-scottsdale" && (
+          <LocationPage
+            city="scottsdale"
+            navigateTo={navigateTo}
+            navigateToQuoteWithLocation={navigateToQuoteWithLocation}
+          />
+        )}
+        {currentPage === "location-tucson" && (
+          <LocationPage
+            city="tucson"
+            navigateTo={navigateTo}
+            navigateToQuoteWithLocation={navigateToQuoteWithLocation}
+          />
+        )}
+        {currentPage === "location-las-vegas" && (
+          <LocationPage
+            city="las-vegas"
+            navigateTo={navigateTo}
+            navigateToQuoteWithLocation={navigateToQuoteWithLocation}
+          />
+        )}
+        {currentPage === "location-albuquerque" && (
+          <LocationPage
+            city="albuquerque"
+            navigateTo={navigateTo}
+            navigateToQuoteWithLocation={navigateToQuoteWithLocation}
+          />
+        )}
       </main>
       <Footer navigateTo={navigateTo} />
+
+      {/* Cart Drawer */}
+      <CartDrawer
+        cartOpen={cartOpen}
+        setCartOpen={setCartOpen}
+        cartItems={cartItems}
+        updateQty={updateQty}
+        removeFromCart={removeFromCart}
+        cartTotal={cartTotal}
+        navigateTo={navigateTo}
+      />
     </div>
   )
 }
@@ -114,11 +279,15 @@ function Header({
   navigateTo,
   mobileMenuOpen,
   setMobileMenuOpen,
+  cartCount,
+  setCartOpen,
 }: {
   currentPage: PageView
   navigateTo: (page: PageView) => void
   mobileMenuOpen: boolean
   setMobileMenuOpen: (open: boolean) => void
+  cartCount: number
+  setCartOpen: (open: boolean) => void
 }) {
   const [scrolled, setScrolled] = useState(false)
 
@@ -134,6 +303,7 @@ function Header({
     { label: "Services", page: "services" },
     { label: "Manufacturer Partners", page: "partners" },
     { label: "Portfolio / Gallery", page: "portfolio" },
+    { label: "Locations", page: "locations" },
     { label: "FAQ", page: "faq" },
   ]
 
@@ -172,7 +342,7 @@ function Header({
               className={cn(
                 "px-3 py-2 text-sm font-medium transition-colors rounded-lg",
                 currentPage === item.page
-                  ? "text-[#C9973A] bg-[#F0EAE0]"
+                  ? "text-[#C9973A] border-b-2 border-[#C9973A]"
                   : "text-[#2C1A0E] hover:text-[#7C5C3E] hover:bg-[#F0EAE0]"
               )}
             >
@@ -187,7 +357,7 @@ function Header({
                 className={cn(
                   "flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors rounded-lg",
                   isProductPage
-                    ? "text-[#C9973A] bg-[#F0EAE0]"
+                    ? "text-[#C9973A] border-b-2 border-[#C9973A]"
                     : "text-[#2C1A0E] hover:text-[#7C5C3E] hover:bg-[#F0EAE0]"
                 )}
               >
@@ -195,17 +365,18 @@ function Header({
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-[#FAF7F2] border-[#DDD0C0]">
+            <DropdownMenuContent className="bg-[#FAF7F2] border-[#7C5C3E] shadow-lg">
               {productItems.map((item) => (
                 <DropdownMenuItem
                   key={item.page}
                   onClick={() => navigateTo(item.page)}
                   className={cn(
-                    "cursor-pointer",
+                    "cursor-pointer flex items-center justify-between",
                     currentPage === item.page && "text-[#C9973A] bg-[#F0EAE0]"
                   )}
                 >
                   {item.label}
+                  <ChevronRight className="h-4 w-4 text-[#8A7060]" />
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -218,7 +389,7 @@ function Header({
               className={cn(
                 "px-3 py-2 text-sm font-medium transition-colors rounded-lg",
                 currentPage === item.page
-                  ? "text-[#C9973A] bg-[#F0EAE0]"
+                  ? "text-[#C9973A] border-b-2 border-[#C9973A]"
                   : "text-[#2C1A0E] hover:text-[#7C5C3E] hover:bg-[#F0EAE0]"
               )}
             >
@@ -229,6 +400,20 @@ function Header({
 
         {/* Right Side */}
         <div className="flex items-center gap-4">
+          {/* Cart Icon */}
+          <button
+            onClick={() => setCartOpen(true)}
+            className="relative p-2 text-[#2C1A0E] hover:text-[#7C5C3E] transition-colors"
+            aria-label="Open cart"
+          >
+            <ShoppingCart className="h-6 w-6" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[#7C5C3E] text-xs font-bold text-white">
+                {cartCount}
+              </span>
+            )}
+          </button>
+
           <a
             href="tel:602-KITCHEN"
             className="hidden md:flex items-center gap-1 text-sm text-[#8A7060]"
@@ -299,6 +484,154 @@ function Header({
   )
 }
 
+// ============ CART DRAWER ============
+function CartDrawer({
+  cartOpen,
+  setCartOpen,
+  cartItems,
+  updateQty,
+  removeFromCart,
+  cartTotal,
+  navigateTo,
+}: {
+  cartOpen: boolean
+  setCartOpen: (open: boolean) => void
+  cartItems: CartItem[]
+  updateQty: (id: string, delta: number) => void
+  removeFromCart: (id: string) => void
+  cartTotal: number
+  navigateTo: (page: PageView) => void
+}) {
+  if (!cartOpen) return null
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-50 bg-black/50"
+        onClick={() => setCartOpen(false)}
+      />
+      
+      {/* Drawer */}
+      <div className="fixed right-0 top-0 z-50 h-full w-full max-w-[420px] bg-[#FAF7F2] shadow-xl flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-[#2C1A0E]">
+          <div>
+            <h2 className="font-serif text-xl font-bold text-[#2C1A0E]">Your Cart</h2>
+            <p className="text-sm text-[#8A7060]">
+              {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
+            </p>
+          </div>
+          <button
+            onClick={() => setCartOpen(false)}
+            className="p-2 text-[#2C1A0E] hover:text-[#7C5C3E]"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+
+        {/* Items */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {cartItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <ShoppingCart className="h-16 w-16 text-[#DDD0C0] mb-4" />
+              <p className="text-lg font-medium text-[#2C1A0E] mb-2">Your cart is empty</p>
+              <p className="text-sm text-[#8A7060] mb-6">
+                Browse our products to find what you need.
+              </p>
+              <Button
+                onClick={() => {
+                  navigateTo("cabinets")
+                  setCartOpen(false)
+                }}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
+              >
+                Browse Products
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {cartItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex gap-4 pb-4 border-b border-[#DDD0C0]"
+                >
+                  <div className="flex-1">
+                    <p className="font-medium text-[#2C1A0E] line-clamp-2">{item.name}</p>
+                    <p className="text-xs text-[#8A7060] font-mono mt-1">SKU: {item.sku}</p>
+                    <Badge className="mt-2 bg-[#C9973A]/20 text-[#7C5C3E] border-none text-xs">
+                      {item.category}
+                    </Badge>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <p className="font-bold text-[#7C5C3E]">
+                      ${(item.price * item.qty).toLocaleString()}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => updateQty(item.id, -1)}
+                        disabled={item.qty <= 1}
+                        className="p-1 border border-[#7C5C3E] rounded text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </button>
+                      <span className="w-8 text-center text-sm font-medium">{item.qty}</span>
+                      <button
+                        onClick={() => updateQty(item.id, 1)}
+                        className="p-1 border border-[#7C5C3E] rounded text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(item.id)}
+                      className="p-1 text-[#8A7060] hover:text-red-600 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        {cartItems.length > 0 && (
+          <div className="p-4 border-t border-[#DDD0C0] bg-[#F0EAE0]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[#2C1A0E]">Subtotal</span>
+              <span className="text-xl font-bold text-[#7C5C3E]">
+                ${cartTotal.toLocaleString()}
+              </span>
+            </div>
+            <p className="text-xs text-[#8A7060] mb-4">
+              Delivery and installation quoted separately
+            </p>
+            <Button
+              onClick={() => {
+                navigateTo("checkout")
+                setCartOpen(false)
+              }}
+              className="w-full bg-[#7C5C3E] hover:bg-[#5C3D20] text-white mb-2"
+            >
+              Proceed to Checkout
+            </Button>
+            <Button
+              onClick={() => setCartOpen(false)}
+              variant="outline"
+              className="w-full border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E]/10"
+            >
+              Continue Shopping
+            </Button>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
 // ============ FOOTER ============
 function Footer({ navigateTo }: { navigateTo: (page: PageView) => void }) {
   return (
@@ -323,11 +656,31 @@ function Footer({ navigateTo }: { navigateTo: (page: PageView) => void }) {
           <div>
             <h3 className="text-lg font-serif font-semibold mb-4">Our Locations</h3>
             <ul className="space-y-2 text-sm text-[#DDD0C0]">
-              <li>Phoenix (HQ)</li>
-              <li>Scottsdale</li>
-              <li>Tucson</li>
-              <li>Las Vegas</li>
-              <li>Albuquerque</li>
+              <li>
+                <button onClick={() => navigateTo("location-phoenix")} className="hover:text-[#C9973A]">
+                  Phoenix (HQ)
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo("location-scottsdale")} className="hover:text-[#C9973A]">
+                  Scottsdale
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo("location-tucson")} className="hover:text-[#C9973A]">
+                  Tucson
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo("location-las-vegas")} className="hover:text-[#C9973A]">
+                  Las Vegas
+                </button>
+              </li>
+              <li>
+                <button onClick={() => navigateTo("location-albuquerque")} className="hover:text-[#C9973A]">
+                  Albuquerque
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -471,7 +824,7 @@ function HomePage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
         </div>
       </section>
 
-      {/* Partner Marquee Teaser */}
+      {/* Partner Marquee Teaser - Now with 6 brands including FixturePlus */}
       <section className="py-20 bg-[#FAF7F2]">
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div className="text-center mb-12">
@@ -483,25 +836,26 @@ function HomePage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
               directly — no phone call required.
             </p>
           </div>
-          <div className="flex flex-wrap justify-center gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
             {[
               { label: "CabinetCo", view: "catalog-cabinetcraft" as PageView },
               { label: "AppliancePro", view: "catalog-appliancepro" as PageView },
               { label: "SinkWorks", view: "catalog-sinkworks" as PageView },
               { label: "LightSource", view: "catalog-lightsource" as PageView },
               { label: "StoneWorks", view: "catalog-stoneworks" as PageView },
+              { label: "FixturePlus", view: "catalog-fixtureplus" as PageView },
             ].map((brand) => (
               <button
                 key={brand.label}
                 onClick={() => navigateTo(brand.view)}
-                className="flex-shrink-0 w-48 cursor-pointer"
+                className="cursor-pointer"
               >
                 <Card className="bg-[#F0EAE0] border-[#DDD0C0] hover:shadow-lg hover:-translate-y-1 transition-all">
                   <CardContent className="flex flex-col items-center justify-center p-6">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7C5C3E]/10">
                       <Package className="h-8 w-8 text-[#7C5C3E]" />
                     </div>
-                    <p className="mt-4 font-medium text-2xl text-[#2C1A0E]">{brand.label}</p>
+                    <p className="mt-4 font-medium text-xl text-[#2C1A0E]">{brand.label}</p>
                   </CardContent>
                 </Card>
               </button>
@@ -545,10 +899,7 @@ function HomePage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
                 location: "Las Vegas",
               },
             ].map((testimonial) => (
-              <Card
-                key={testimonial.name}
-                className="bg-[#FAF7F2] border-[#DDD0C0]"
-              >
+              <Card key={testimonial.name} className="bg-[#FAF7F2] border-[#DDD0C0]">
                 <CardContent className="p-6">
                   <div className="flex gap-1 mb-4">
                     {[...Array(5)].map((_, i) => (
@@ -579,10 +930,10 @@ function AboutPage() {
 
   const locations = [
     { city: "Phoenix (HQ)", address: "101 Sedalia Drive, Phoenix, AZ 85001" },
-    { city: "Scottsdale", address: "Scottsdale, AZ 85018" },
-    { city: "Tucson", address: "Tucson, AZ 85705" },
-    { city: "Las Vegas", address: "Las Vegas, NV 89169" },
-    { city: "Albuquerque", address: "Albuquerque, NM 87110" },
+    { city: "Scottsdale", address: "4500 N Scottsdale Rd, Scottsdale, AZ 85251" },
+    { city: "Tucson", address: "2200 E Broadway Blvd, Tucson, AZ 85719" },
+    { city: "Las Vegas", address: "3800 S Maryland Pkwy, Las Vegas, NV 89119" },
+    { city: "Albuquerque", address: "6600 Menaul Blvd NE, Albuquerque, NM 87110" },
   ]
 
   return (
@@ -651,7 +1002,6 @@ function AboutPage() {
 
           {/* Three-column layout: Design Team | Leadership | Renovation Crew */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
             {/* Left — Design and Sales Team */}
             <div className="flex flex-col">
               <div className="flex items-center gap-2 mb-5">
@@ -662,9 +1012,9 @@ function AboutPage() {
               <div className="space-y-3">
                 {[
                   { name: "Sarah Mitchell", role: "Lead Kitchen Designer" },
-                  { name: "Carlos Ruiz", role: "Bath &amp; Tile Specialist" },
+                  { name: "Carlos Ruiz", role: "Bath & Tile Specialist" },
                   { name: "Priya Nair", role: "Interior Design Consultant" },
-                  { name: "James Thornton", role: "Sales &amp; Estimating Lead" },
+                  { name: "James Thornton", role: "Sales & Estimating Lead" },
                 ].map((member) => (
                   <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
                     <CardContent className="p-4 flex items-center gap-3">
@@ -673,7 +1023,7 @@ function AboutPage() {
                       </div>
                       <div>
                         <p className="font-semibold text-sm text-[#2C1A0E]">{member.name}</p>
-                        <p className="text-xs text-[#8A7060]" dangerouslySetInnerHTML={{ __html: member.role }} />
+                        <p className="text-xs text-[#8A7060]">{member.role}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -716,9 +1066,9 @@ function AboutPage() {
               <div className="space-y-3">
                 {[
                   { name: "Derek Walsh", role: "Master Installer" },
-                  { name: "Tomás Guerrero", role: "Cabinetry &amp; Millwork Lead" },
-                  { name: "Linda Park", role: "Tile &amp; Flooring Specialist" },
-                  { name: "Marcus Webb", role: "Logistics &amp; Site Coordinator" },
+                  { name: "Tomas Guerrero", role: "Cabinetry & Millwork Lead" },
+                  { name: "Linda Park", role: "Tile & Flooring Specialist" },
+                  { name: "Marcus Webb", role: "Logistics & Site Coordinator" },
                 ].map((member) => (
                   <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
                     <CardContent className="p-4 flex items-center gap-3">
@@ -727,14 +1077,13 @@ function AboutPage() {
                       </div>
                       <div>
                         <p className="font-semibold text-sm text-[#2C1A0E]">{member.name}</p>
-                        <p className="text-xs text-[#8A7060]" dangerouslySetInnerHTML={{ __html: member.role }} />
+                        <p className="text-xs text-[#8A7060]">{member.role}</p>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             </div>
-
           </div>
         </div>
 
@@ -881,10 +1230,14 @@ function ServicesPage() {
 function ProductsPage({
   category,
   navigateTo,
+  addToCart,
 }: {
   category: "cabinets" | "appliances" | "sinks" | "lighting"
   navigateTo: (page: PageView) => void
+  addToCart: (item: Omit<CartItem, "qty">) => void
 }) {
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set())
+
   const categories = [
     { id: "cabinets", label: "Cabinets" },
     { id: "appliances", label: "Appliances" },
@@ -892,7 +1245,6 @@ function ProductsPage({
     { id: "lighting", label: "Lighting" },
   ] as const
 
-  // Mappings for catalog callout cards per product category
   const categoryCalloutMappings: Record<string, { name: string; catalogView: PageView }[]> = {
     cabinets: [
       { name: "CabinetCraft Co.", catalogView: "catalog-cabinetcraft" },
@@ -918,24 +1270,24 @@ function ProductsPage({
 
   const products = {
     cabinets: [
-      { name: "42-inch Shaker Cabinet Set – White", price: "$1,299.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-oBjtmZmlwblIwgOm7HCeVBTBM4lcsT.png" },
-      { name: "Deluxe Oak Cabinet Kit", price: "$4,500.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-7ZaeKYZfeTMWiWkLJuqWlpsNwN5P6v.png" },
-      { name: "Farmhouse Base Cabinet – Walnut", price: "$2,100.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BgclTP87kqrPzQVe98nRfijKVkeVD2.png" },
+      { id: "cab-1", name: "42-inch Shaker Cabinet Set – White", price: 1299, sku: "CC-4200-W", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-oBjtmZmlwblIwgOm7HCeVBTBM4lcsT.png" },
+      { id: "cab-2", name: "Deluxe Oak Cabinet Kit", price: 4500, sku: "CC-OAK-10", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-7ZaeKYZfeTMWiWkLJuqWlpsNwN5P6v.png" },
+      { id: "cab-3", name: "Farmhouse Base Cabinet – Walnut", price: 2100, sku: "CC-FARM-W", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-BgclTP87kqrPzQVe98nRfijKVkeVD2.png" },
     ],
     appliances: [
-      { name: "Stainless Steel Range – 36 inch", price: "$2,800.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YNYnPwhuPtt8tzXTLwKN36CzJhxcwg.png" },
-      { name: "Built-in Dishwasher – Premium Series", price: "$1,100.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-TqJUuDpLoSbsqmmaoq2hLiB27SdRYy.png" },
-      { name: "French Door Refrigerator", price: "$2,200.00", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-cNa6eKWSNrsen0PLnkilzf0HPcmiqD.png" },
+      { id: "app-1", name: "Stainless Steel Range – 36 inch", price: 2800, sku: "AP-RNG-36", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-YNYnPwhuPtt8tzXTLwKN36CzJhxcwg.png" },
+      { id: "app-2", name: "Built-in Dishwasher – Premium Series", price: 1100, sku: "AP-DW-PRE", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-TqJUuDpLoSbsqmmaoq2hLiB27SdRYy.png" },
+      { id: "app-3", name: "French Door Refrigerator", price: 2200, sku: "AP-FDR-27", stock: "Low Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-cNa6eKWSNrsen0PLnkilzf0HPcmiqD.png" },
     ],
     sinks: [
-      { name: "Stainless Steel Farmhouse Sink (Large)", price: "$549.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-T2RNgj9HqoTuDgUeUpn06mrCWHSylG.png" },
-      { name: "Granite Double Sink – Undermount", price: "$850.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image.png-QW0ltw0zaOM9pLmhX1eAGhizPMvK34.jpeg" },
-      { name: "Chrome Pull-Down Kitchen Faucet", price: "$320.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-A2DwkI2p0bS1mMVNSJBSFlKgIuIFw5.png" },
+      { id: "sink-1", name: "Stainless Steel Farmhouse Sink (Large)", price: 549, sku: "SW-FARM-L", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-T2RNgj9HqoTuDgUeUpn06mrCWHSylG.png" },
+      { id: "sink-2", name: "Granite Double Sink – Undermount", price: 850, sku: "SW-GRAN-DU", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image.png-QW0ltw0zaOM9pLmhX1eAGhizPMvK34.jpeg" },
+      { id: "sink-3", name: "Chrome Pull-Down Kitchen Faucet", price: 320, sku: "SW-KFC-PD", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-A2DwkI2p0bS1mMVNSJBSFlKgIuIFw5.png" },
     ],
     lighting: [
-      { name: "Under-Cabinet LED Strip Kit", price: "$180.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ieCJgfQo7YaSsMR1n73LpzgBS14ntF.png" },
-      { name: "Pendant Light Set – Brushed Bronze (3-pack)", price: "$440.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-fkPHEax47KAwjOskZbY4nYg2G0yD3X.png" },
-      { name: "Recessed Lighting Kit – 6 pack", price: "$290.00", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GI566smeTSQ6TsVaa8CGFOO0XFCWxv.png" },
+      { id: "light-1", name: "Under-Cabinet LED Strip Kit", price: 180, sku: "LS-LED-12", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-ieCJgfQo7YaSsMR1n73LpzgBS14ntF.png" },
+      { id: "light-2", name: "Pendant Light Set – Brushed Bronze (3-pack)", price: 440, sku: "LS-PND-BB3", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-fkPHEax47KAwjOskZbY4nYg2G0yD3X.png" },
+      { id: "light-3", name: "Recessed Lighting Kit – 6 pack", price: 290, sku: "LS-REC-6", stock: "In Stock", image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-GI566smeTSQ6TsVaa8CGFOO0XFCWxv.png" },
     ],
   }
 
@@ -944,6 +1296,25 @@ function ProductsPage({
     appliances: "Appliances",
     sinks: "Sinks & Faucets",
     lighting: "Lighting",
+  }
+
+  const handleAddToCart = (product: (typeof products)[typeof category][number]) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      price: product.price,
+      category: categoryTitle[category],
+      source: "product",
+    })
+    setAddedItems((prev) => new Set(prev).add(product.id))
+    setTimeout(() => {
+      setAddedItems((prev) => {
+        const next = new Set(prev)
+        next.delete(product.id)
+        return next
+      })
+    }, 1500)
   }
 
   return (
@@ -977,7 +1348,7 @@ function ProductsPage({
         {/* Product Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
           {products[category].map((product) => (
-            <Card key={product.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
+            <Card key={product.id} className="bg-[#F0EAE0] border-[#DDD0C0]">
               <CardContent className="p-6">
                 <div className="flex h-40 items-center justify-center rounded-lg bg-[#FAF7F2] mb-4 overflow-hidden">
                   {product.image ? (
@@ -991,7 +1362,7 @@ function ProductsPage({
                   )}
                 </div>
                 <h3 className="font-semibold text-[#2C1A0E] mb-2">{product.name}</h3>
-                <p className="text-xl font-bold text-[#7C5C3E] mb-3">{product.price}</p>
+                <p className="text-xl font-bold text-[#7C5C3E] mb-3">${product.price.toLocaleString()}</p>
                 <Badge
                   variant="outline"
                   className={cn(
@@ -1003,13 +1374,40 @@ function ProductsPage({
                 >
                   {product.stock}
                 </Badge>
-                <Button
-                  variant="outline"
-                  className="w-full border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
-                  onClick={() => navigateTo("quote")}
-                >
-                  Request a Quote
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => handleAddToCart(product)}
+                    className={cn(
+                      "w-full",
+                      addedItems.has(product.id)
+                        ? "bg-green-600 hover:bg-green-600"
+                        : "bg-[#7C5C3E] hover:bg-[#5C3D20]",
+                      "text-white"
+                    )}
+                  >
+                    {addedItems.has(product.id) ? (
+                      <>
+                        <Check className="h-4 w-4 mr-2" />
+                        Added!
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Add to Cart
+                        {product.stock === "Low Stock" && (
+                          <AlertCircle className="h-4 w-4 ml-2" />
+                        )}
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
+                    onClick={() => navigateTo("quote")}
+                  >
+                    Request a Quote
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -1258,110 +1656,538 @@ function PortfolioPage() {
   )
 }
 
-// ============ QUOTE PAGE ============
-function QuotePage() {
+// ============ CONSULTATION SCHEDULER (replaces QuotePage) ============
+function ConsultationScheduler({
+  navigateTo,
+  preselectedLocation,
+  clearPreselectedLocation,
+}: {
+  navigateTo: (page: PageView) => void
+  preselectedLocation: string | null
+  clearPreselectedLocation: () => void
+}) {
+  const [step, setStep] = useState(1)
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(preselectedLocation)
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([])
+  const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [consultationType, setConsultationType] = useState<string>("in-person")
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    notes: "",
+    sendConfirmation: true,
+  })
+  const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    if (preselectedLocation) {
+      setSelectedLocation(preselectedLocation)
+    }
+  }, [preselectedLocation])
+
+  const locations = [
+    { id: "phoenix", city: "Phoenix (HQ)", address: "101 Sedalia Drive, Phoenix, AZ 85001", phone: "602-KITCHEN", team: 10 },
+    { id: "scottsdale", city: "Scottsdale", address: "4500 N Scottsdale Rd, Scottsdale, AZ 85251", phone: "480-KITCHEN", team: 8 },
+    { id: "tucson", city: "Tucson", address: "2200 E Broadway Blvd, Tucson, AZ 85719", phone: "520-KITCHEN", team: 7 },
+    { id: "las-vegas", city: "Las Vegas", address: "3800 S Maryland Pkwy, Las Vegas, NV 89119", phone: "702-KITCHEN", team: 7 },
+    { id: "albuquerque", city: "Albuquerque", address: "6600 Menaul Blvd NE, Albuquerque, NM 87110", phone: "505-KITCHEN", team: 7 },
+  ]
+
+  const projectTypes = [
+    { id: "kitchen", label: "Kitchen Remodel", icon: UtensilsCrossed },
+    { id: "bathroom", label: "Bathroom Remodel", icon: Droplets },
+    { id: "cabinets", label: "Custom Cabinets", icon: Package },
+    { id: "appliances", label: "Appliance Upgrade", icon: Zap },
+    { id: "countertops", label: "Countertop Replacement", icon: Layers },
+    { id: "full-home", label: "Full Home Renovation", icon: Home },
+    { id: "lighting", label: "Lighting Design", icon: Lightbulb },
+    { id: "other", label: "Other / Not Sure", icon: HelpCircle },
+  ]
+
+  const getNext14Days = () => {
+    const days = []
+    const today = new Date()
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      const dayOfWeek = date.getDay()
+      if (dayOfWeek !== 0) {
+        days.push({
+          date: date.toISOString().split("T")[0],
+          label: date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
+          isEarliest: i < 3,
+        })
+      }
+    }
+    return days
+  }
+
+  const morningSlots = ["8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM"]
+  const afternoonSlots = ["1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"]
+
+  const toggleProject = (id: string) => {
+    setSelectedProjects((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    )
+  }
+
+  const handleSubmit = () => {
+    setSubmitted(true)
+    clearPreselectedLocation()
+  }
+
+  if (submitted) {
+    const location = locations.find((l) => l.id === selectedLocation)
+    return (
+      <div className="py-16 bg-[#FAF7F2]">
+        <div className="mx-auto max-w-2xl px-4 lg:px-8 text-center">
+          <div className="animate-[scaleIn_0.5s_ease-out]">
+            <CalendarCheck className="h-20 w-20 text-[#C9973A] mx-auto mb-6" />
+          </div>
+          <h1 className="font-serif text-3xl font-bold text-[#2C1A0E] mb-4">
+            Consultation Requested!
+          </h1>
+          
+          <Card className="bg-[#F0EAE0] border-[#7C5C3E] mt-8 text-left">
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <p className="text-sm text-[#8A7060]">Location</p>
+                <p className="font-medium text-[#2C1A0E]">{location?.city}</p>
+                <p className="text-sm text-[#8A7060]">{location?.address}</p>
+              </div>
+              <div>
+                <p className="text-sm text-[#8A7060]">Project Type(s)</p>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {selectedProjects.map((p) => {
+                    const project = projectTypes.find((pt) => pt.id === p)
+                    return (
+                      <Badge key={p} className="bg-[#C9973A]/20 text-[#7C5C3E] border-none">
+                        {project?.label}
+                      </Badge>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-[#8A7060]">Date & Time</p>
+                <p className="font-medium text-[#2C1A0E]">
+                  {selectedDate} at {selectedTime} ({consultationType === "in-person" ? "In-Person" : "Video Call"})
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-[#8A7060]">Contact</p>
+                <p className="font-medium text-[#2C1A0E]">
+                  {formData.firstName} {formData.lastName}
+                </p>
+                <p className="text-sm text-[#8A7060]">{formData.email}</p>
+                <p className="text-sm text-[#8A7060]">{formData.phone}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <p className="mt-6 text-[#8A7060]">
+            We&apos;ll send a confirmation to {formData.email}. An HRS designer will reach out to confirm your appointment and any preparation details.
+          </p>
+
+          <Button
+            onClick={() => navigateTo("home")}
+            className="mt-8 bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+          >
+            Return Home
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="py-16 bg-[#FAF7F2]">
-      <div className="mx-auto max-w-2xl px-4 lg:px-8">
-        <Card className="bg-white border-[#DDD0C0] shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="font-serif text-3xl text-[#2C1A0E]">
-              Request a Free Consultation
-            </CardTitle>
-            <CardDescription className="text-[#8A7060]">
-              Fill out the form below and a member of our team will reach out within 1 business day.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#2C1A0E]">First Name</label>
-                <Input
-                  placeholder="John"
-                  className="border-[#DDD0C0] focus:ring-[#C9973A] focus:border-[#C9973A]"
-                />
+      <div className="mx-auto max-w-4xl px-4 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="font-serif text-4xl font-bold text-[#2C1A0E]">Schedule a Consultation</h1>
+          <div className="mt-4 mx-auto w-24 h-1 bg-[#C9973A]" />
+        </div>
+
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center mb-12">
+          {[
+            { num: 1, label: "Location" },
+            { num: 2, label: "Project" },
+            { num: 3, label: "Schedule" },
+            { num: 4, label: "Details" },
+          ].map((s, i) => (
+            <div key={s.num} className="flex items-center">
+              <div className="flex flex-col items-center">
+                <div
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold",
+                    step > s.num
+                      ? "bg-[#7C5C3E] text-white"
+                      : step === s.num
+                      ? "bg-[#7C5C3E] text-white"
+                      : "border-2 border-[#DDD0C0] text-[#8A7060]"
+                  )}
+                >
+                  {step > s.num ? <Check className="h-5 w-5" /> : s.num}
+                </div>
+                <span className="mt-2 text-xs text-[#8A7060]">{s.label}</span>
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-[#2C1A0E]">Last Name</label>
-                <Input
-                  placeholder="Doe"
-                  className="border-[#DDD0C0] focus:ring-[#C9973A] focus:border-[#C9973A]"
+              {i < 3 && (
+                <div
+                  className={cn(
+                    "h-1 w-12 mx-2 rounded",
+                    step > s.num ? "bg-[#7C5C3E]" : "bg-[#DDD0C0]"
+                  )}
                 />
-              </div>
+              )}
             </div>
+          ))}
+        </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2C1A0E]">Email Address</label>
-              <Input
-                type="email"
-                placeholder="john@example.com"
-                className="border-[#DDD0C0] focus:ring-[#C9973A] focus:border-[#C9973A]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2C1A0E]">Phone Number</label>
-              <Input
-                type="tel"
-                placeholder="(555) 123-4567"
-                className="border-[#DDD0C0] focus:ring-[#C9973A] focus:border-[#C9973A]"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2C1A0E]">Nearest Location</label>
-              <Select>
-                <SelectTrigger className="border-[#DDD0C0]">
-                  <SelectValue placeholder="Select a location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="phoenix">Phoenix (HQ)</SelectItem>
-                  <SelectItem value="scottsdale">Scottsdale</SelectItem>
-                  <SelectItem value="tucson">Tucson</SelectItem>
-                  <SelectItem value="lasvegas">Las Vegas</SelectItem>
-                  <SelectItem value="albuquerque">Albuquerque</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2C1A0E]">Project Type</label>
-              <Select>
-                <SelectTrigger className="border-[#DDD0C0]">
-                  <SelectValue placeholder="Select project type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="kitchen">Kitchen Remodel</SelectItem>
-                  <SelectItem value="bathroom">Bathroom Remodel</SelectItem>
-                  <SelectItem value="cabinets">Custom Cabinets</SelectItem>
-                  <SelectItem value="appliances">Appliance Installation</SelectItem>
-                  <SelectItem value="lighting">Lighting</SelectItem>
-                  <SelectItem value="full">Full Renovation</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-[#2C1A0E]">Project Details</label>
-              <Textarea
-                placeholder="Tell us about your space, timeline, and any ideas you have…"
-                className="border-[#DDD0C0] focus:ring-[#C9973A] focus:border-[#C9973A] min-h-[120px]"
-              />
-            </div>
-
-            <Button className="w-full bg-[#7C5C3E] hover:bg-[#5C3D20] text-white">
-              Submit Request
-            </Button>
-
-            <p className="text-center text-sm text-[#8A7060]">
-              Or call us directly:{" "}
-              <a href="tel:602-KITCHEN" className="text-[#7C5C3E] font-medium inline-flex items-center gap-1">
-                <Phone className="h-4 w-4" /> 602-KITCHEN
-              </a>
+        {/* Step 1: Location */}
+        {step === 1 && (
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-2">
+              Which HRS location is nearest to you?
+            </h2>
+            <p className="text-[#8A7060] mb-8">
+              We have 5 locations across the Southwest, each with a dedicated design and installation team.
             </p>
-          </CardContent>
-        </Card>
+            <div className="grid gap-4 md:grid-cols-2">
+              {locations.map((loc) => (
+                <button
+                  key={loc.id}
+                  onClick={() => setSelectedLocation(loc.id)}
+                  className={cn(
+                    "relative p-6 rounded-xl border-2 text-left transition-all",
+                    selectedLocation === loc.id
+                      ? "border-[#7C5C3E] bg-[#C9973A]/10"
+                      : "border-[#DDD0C0] bg-[#F0EAE0] hover:border-[#7C5C3E]"
+                  )}
+                >
+                  {selectedLocation === loc.id && (
+                    <div className="absolute top-3 right-3">
+                      <CheckCircle className="h-6 w-6 text-[#7C5C3E]" />
+                    </div>
+                  )}
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#7C5C3E]/10">
+                      <MapPin className="h-6 w-6 text-[#7C5C3E]" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif font-bold text-[#2C1A0E]">{loc.city}</h3>
+                      <p className="text-sm text-[#8A7060] mt-1">{loc.address}</p>
+                      <div className="flex items-center gap-4 mt-2 text-sm">
+                        <span className="flex items-center gap-1 text-[#8A7060]">
+                          <Phone className="h-4 w-4" />
+                          {loc.phone}
+                        </span>
+                        <Badge className="bg-[#7C5C3E]/10 text-[#7C5C3E] border-none">
+                          {loc.team}-person team
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-end">
+              <Button
+                onClick={() => setStep(2)}
+                disabled={!selectedLocation}
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                Next: Project Type
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Project Type */}
+        {step === 2 && (
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-2">
+              What are you looking to renovate?
+            </h2>
+            <p className="text-[#8A7060] mb-8">
+              Select all that apply — we handle everything from single fixture upgrades to full multi-room transformations.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {projectTypes.map((project) => (
+                <button
+                  key={project.id}
+                  onClick={() => toggleProject(project.id)}
+                  className={cn(
+                    "relative p-4 rounded-xl border-2 text-left transition-all",
+                    selectedProjects.includes(project.id)
+                      ? "border-[#7C5C3E] bg-[#C9973A]/10"
+                      : "border-[#DDD0C0] bg-[#F0EAE0] hover:border-[#7C5C3E]"
+                  )}
+                >
+                  {selectedProjects.includes(project.id) && (
+                    <div className="absolute top-2 right-2">
+                      <Check className="h-5 w-5 text-[#7C5C3E]" />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <project.icon
+                      className={cn(
+                        "h-6 w-6",
+                        selectedProjects.includes(project.id) ? "text-[#C9973A]" : "text-[#7C5C3E]"
+                      )}
+                    />
+                    <span className="font-medium text-[#2C1A0E]">{project.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="mt-8 flex justify-between">
+              <Button
+                onClick={() => setStep(1)}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E]"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={() => setStep(3)}
+                disabled={selectedProjects.length === 0}
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                Next: Schedule
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Schedule */}
+        {step === 3 && (
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-2">
+              Pick a preferred consultation date and time.
+            </h2>
+            <p className="text-[#8A7060] mb-8">
+              All consultations are free. In-person visits are available at your chosen location or we can arrange a video call.
+            </p>
+
+            {/* Date Selection */}
+            <div className="mb-8">
+              <p className="text-sm font-medium text-[#2C1A0E] mb-3">Select a Date</p>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {getNext14Days().map((day) => (
+                  <button
+                    key={day.date}
+                    onClick={() => setSelectedDate(day.label)}
+                    className={cn(
+                      "flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all",
+                      selectedDate === day.label
+                        ? "bg-[#7C5C3E] text-white"
+                        : "bg-[#F0EAE0] text-[#2C1A0E] hover:bg-[#DDD0C0]"
+                    )}
+                  >
+                    {day.label}
+                    {day.isEarliest && (
+                      <span className="block text-xs opacity-75">(Earliest)</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Time Selection */}
+            {selectedDate && (
+              <div className="mb-8 animate-in fade-in slide-in-from-top-2">
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Sun className="h-5 w-5 text-[#C9973A]" />
+                    <span className="text-sm font-medium text-[#2C1A0E]">Morning</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {morningSlots.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => setSelectedTime(time)}
+                        className={cn(
+                          "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                          selectedTime === time
+                            ? "bg-[#7C5C3E] text-white"
+                            : "bg-[#F0EAE0] text-[#2C1A0E] hover:bg-[#DDD0C0]"
+                        )}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Coffee className="h-5 w-5 text-[#C9973A]" />
+                    <span className="text-sm font-medium text-[#2C1A0E]">Afternoon</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {afternoonSlots.map((time) => (
+                      <button
+                        key={time}
+                        onClick={() => setSelectedTime(time)}
+                        className={cn(
+                          "px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                          selectedTime === time
+                            ? "bg-[#7C5C3E] text-white"
+                            : "bg-[#F0EAE0] text-[#2C1A0E] hover:bg-[#DDD0C0]"
+                        )}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Consultation Type */}
+            <div className="mb-8">
+              <p className="text-sm font-medium text-[#2C1A0E] mb-3">Consultation Type</p>
+              <RadioGroup
+                value={consultationType}
+                onValueChange={setConsultationType}
+                className="flex gap-4"
+              >
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="in-person" className="border-[#7C5C3E] text-[#7C5C3E]" />
+                  <span className="text-sm text-[#2C1A0E]">In-Person at HRS Location</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem value="video" className="border-[#7C5C3E] text-[#7C5C3E]" />
+                  <span className="text-sm text-[#2C1A0E]">Video Call (Zoom/Teams)</span>
+                </label>
+              </RadioGroup>
+            </div>
+
+            <div className="mt-8 flex justify-between">
+              <Button
+                onClick={() => setStep(2)}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E]"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={() => setStep(4)}
+                disabled={!selectedDate || !selectedTime}
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                Next: Your Details
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 4: Details */}
+        {step === 4 && (
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-2">
+              Almost done — tell us about yourself.
+            </h2>
+            <Card className="bg-white border-[#DDD0C0] mt-8">
+              <CardContent className="p-6 space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#2C1A0E]">First Name</label>
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      placeholder="John"
+                      className="border-[#DDD0C0]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#2C1A0E]">Last Name</label>
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      placeholder="Doe"
+                      className="border-[#DDD0C0]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8A7060]" />
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="john@example.com"
+                      className="border-[#DDD0C0] pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8A7060]" />
+                    <Input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="(555) 123-4567"
+                      className="border-[#DDD0C0] pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Additional Notes (Optional)</label>
+                  <Textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Anything else you'd like us to know before the consultation? Rough budget, current space dimensions, inspiration photos you can share, etc."
+                    className="border-[#DDD0C0] min-h-[100px]"
+                  />
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <Checkbox
+                    checked={formData.sendConfirmation}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, sendConfirmation: checked as boolean })
+                    }
+                    className="border-[#7C5C3E] data-[state=checked]:bg-[#7C5C3E]"
+                  />
+                  <span className="text-sm text-[#2C1A0E]">Send me a confirmation email</span>
+                </label>
+              </CardContent>
+            </Card>
+
+            <div className="mt-8 flex justify-between">
+              <Button
+                onClick={() => setStep(3)}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E]"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone}
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                <CalendarCheck className="h-4 w-4 mr-2" />
+                Request Consultation
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -1478,9 +2304,11 @@ function FAQPage({ navigateTo }: { navigateTo: (page: PageView) => void }) {
 type PartnerKey = "cabinetcraft" | "appliancepro" | "sinkworks" | "lightsource" | "stoneworks" | "fixtureplus"
 
 interface CatalogProduct {
+  id: string
   name: string
   sku: string
   price: string
+  priceNum: number
   stock: "In Stock" | "Low Stock" | "Special Order"
   specs: string[]
 }
@@ -1500,12 +2328,12 @@ const catalogData: Record<PartnerKey, CatalogPartnerData> = {
     bannerHue: "#E8D5B7",
     description: "CabinetCraft Co. specializes in premium custom and semi-custom cabinetry for kitchen and bath. Every piece is built to order with solid wood construction and a lifetime finish warranty.",
     products: [
-      { name: "42\" Shaker Cabinet Set – White", sku: "CC-4200-W", price: "$1,299", stock: "In Stock", specs: ["Solid maple construction", "Soft-close hinges", "42\" height", "Available in 8 finish options"] },
-      { name: "Deluxe Oak Cabinet Kit – 10-piece", sku: "CC-OAK-10", price: "$4,500", stock: "In Stock", specs: ["Red oak veneer", "Full-extension drawers", "Dovetail joinery", "Includes crown molding"] },
-      { name: "Farmhouse Base Cabinet – Walnut", sku: "CC-FARM-W", price: "$2,100", stock: "Special Order", specs: ["American black walnut", "36\" base height", "Exposed face frame", "Oil finish"] },
-      { name: "Floating Bathroom Vanity – 48\"", sku: "CC-VAN-48", price: "$1,850", stock: "In Stock", specs: ["Plywood box construction", "2 soft-close doors", "Pre-drilled for undermount sink"] },
-      { name: "Pantry Pull-Out Cabinet", sku: "CC-PAN-PO", price: "$980", stock: "In Stock", specs: ["Full-extension pull-out", "84\" tall", "5 adjustable shelves", "White painted finish"] },
-      { name: "Glass-Front Display Cabinet", sku: "CC-DISP-GF", price: "$760", stock: "Special Order", specs: ["Tempered glass panels", "Interior LED-ready", "Available in 3 widths"] },
+      { id: "cc-1", name: "42\" Shaker Cabinet Set – White", sku: "CC-4200-W", price: "$1,299", priceNum: 1299, stock: "In Stock", specs: ["Solid maple construction", "Soft-close hinges", "42\" height", "Available in 8 finish options"] },
+      { id: "cc-2", name: "Deluxe Oak Cabinet Kit – 10-piece", sku: "CC-OAK-10", price: "$4,500", priceNum: 4500, stock: "In Stock", specs: ["Red oak veneer", "Full-extension drawers", "Dovetail joinery", "Includes crown molding"] },
+      { id: "cc-3", name: "Farmhouse Base Cabinet – Walnut", sku: "CC-FARM-W", price: "$2,100", priceNum: 2100, stock: "Special Order", specs: ["American black walnut", "36\" base height", "Exposed face frame", "Oil finish"] },
+      { id: "cc-4", name: "Floating Bathroom Vanity – 48\"", sku: "CC-VAN-48", price: "$1,850", priceNum: 1850, stock: "In Stock", specs: ["Plywood box construction", "2 soft-close doors", "Pre-drilled for undermount sink"] },
+      { id: "cc-5", name: "Pantry Pull-Out Cabinet", sku: "CC-PAN-PO", price: "$980", priceNum: 980, stock: "In Stock", specs: ["Full-extension pull-out", "84\" tall", "5 adjustable shelves", "White painted finish"] },
+      { id: "cc-6", name: "Glass-Front Display Cabinet", sku: "CC-DISP-GF", price: "$760", priceNum: 760, stock: "Special Order", specs: ["Tempered glass panels", "Interior LED-ready", "Available in 3 widths"] },
     ],
   },
   appliancepro: {
@@ -1514,12 +2342,12 @@ const catalogData: Record<PartnerKey, CatalogPartnerData> = {
     bannerHue: "#E0CBA8",
     description: "AppliancePro delivers industry-leading kitchen appliances trusted by renovation professionals nationwide. Our lineup covers everything from ranges to refrigerators with best-in-class warranty coverage.",
     products: [
-      { name: "36\" Stainless Steel Gas Range", sku: "AP-RNG-36", price: "$2,800", stock: "In Stock", specs: ["6 sealed burners", "Double convection oven", "Continuous cast-iron grates", "5-year warranty"] },
-      { name: "French Door Refrigerator – 27 cu ft", sku: "AP-FDR-27", price: "$2,200", stock: "Low Stock", specs: ["Counter-depth option", "Dual ice maker", "LED interior", "Energy Star certified"] },
-      { name: "Built-in Dishwasher – Premium Series", sku: "AP-DW-PRE", price: "$1,100", stock: "In Stock", specs: ["44 dBA ultra-quiet", "3rd rack", "Soil sensor", "6 wash cycles, panel-ready option"] },
-      { name: "Over-Range Microwave – 2.1 cu ft", sku: "AP-MWV-21", price: "$540", stock: "In Stock", specs: ["400 CFM ventilation", "Sensor cooking", "1000W", "Fits 30\" cabinet opening"] },
-      { name: "Counter-Depth Side-by-Side Refrigerator", sku: "AP-SBS-22", price: "$1,750", stock: "Special Order", specs: ["22 cu ft", "External water/ice", "Door-in-door storage", "Fingerprint resistant"] },
-      { name: "30\" Electric Induction Range", sku: "AP-IND-30", price: "$1,950", stock: "In Stock", specs: ["4 induction zones", "Bridge element", "True convection", "Slide-in design"] },
+      { id: "ap-1", name: "36\" Stainless Steel Gas Range", sku: "AP-RNG-36", price: "$2,800", priceNum: 2800, stock: "In Stock", specs: ["6 sealed burners", "Double convection oven", "Continuous cast-iron grates", "5-year warranty"] },
+      { id: "ap-2", name: "French Door Refrigerator – 27 cu ft", sku: "AP-FDR-27", price: "$2,200", priceNum: 2200, stock: "Low Stock", specs: ["Counter-depth option", "Dual ice maker", "LED interior", "Energy Star certified"] },
+      { id: "ap-3", name: "Built-in Dishwasher – Premium Series", sku: "AP-DW-PRE", price: "$1,100", priceNum: 1100, stock: "In Stock", specs: ["44 dBA ultra-quiet", "3rd rack", "Soil sensor", "6 wash cycles, panel-ready option"] },
+      { id: "ap-4", name: "Over-Range Microwave – 2.1 cu ft", sku: "AP-MWV-21", price: "$540", priceNum: 540, stock: "In Stock", specs: ["400 CFM ventilation", "Sensor cooking", "1000W", "Fits 30\" cabinet opening"] },
+      { id: "ap-5", name: "Counter-Depth Side-by-Side Refrigerator", sku: "AP-SBS-22", price: "$1,750", priceNum: 1750, stock: "Special Order", specs: ["22 cu ft", "External water/ice", "Door-in-door storage", "Fingerprint resistant"] },
+      { id: "ap-6", name: "30\" Electric Induction Range", sku: "AP-IND-30", price: "$1,950", priceNum: 1950, stock: "In Stock", specs: ["4 induction zones", "Bridge element", "True convection", "Slide-in design"] },
     ],
   },
   sinkworks: {
@@ -1528,12 +2356,12 @@ const catalogData: Record<PartnerKey, CatalogPartnerData> = {
     bannerHue: "#E5D8C8",
     description: "SinkWorks produces high-quality sinks and faucets engineered for both form and function. From farmhouse apron fronts to sleek undermount bowls, every piece carries a lifetime finish guarantee.",
     products: [
-      { name: "Farmhouse Apron Sink – Stainless Steel (Large)", sku: "SW-FARM-L", price: "$549", stock: "In Stock", specs: ["16-gauge T-304 stainless", "33\"×21\"×9\"", "Single bowl", "Sound dampening coating"] },
-      { name: "Granite Double Sink – Undermount", sku: "SW-GRAN-DU", price: "$850", stock: "In Stock", specs: ["Composite granite", "33\"×19\"", "60/40 split", "8 color options, chip-resistant"] },
-      { name: "Chrome Pull-Down Kitchen Faucet", sku: "SW-KFC-PD", price: "$320", stock: "In Stock", specs: ["3-function spray", "68\" hose", "Ceramic disc cartridge", "Deck plate included"] },
-      { name: "Vessel Bathroom Sink – White Porcelain", sku: "SW-VES-WP", price: "$290", stock: "In Stock", specs: ["Vitreous china", "16\"×5.5\" oval", "Overflow drain included", "Glossy finish"] },
-      { name: "Bar/Prep Sink – 15\" Single Bowl", sku: "SW-BAR-15", price: "$210", stock: "In Stock", specs: ["18-gauge stainless", "15\"×15\"×7\"", "Bottom grid and drain included"] },
-      { name: "Touchless Kitchen Faucet – Matte Black", sku: "SW-TCH-MB", price: "$480", stock: "Special Order", specs: ["Motion sensor + manual mode", "Pull-down spray", "1.8 GPM", "Deck plate included"] },
+      { id: "sw-1", name: "Farmhouse Apron Sink – Stainless Steel (Large)", sku: "SW-FARM-L", price: "$549", priceNum: 549, stock: "In Stock", specs: ["16-gauge T-304 stainless", "33\"×21\"×9\"", "Single bowl", "Sound dampening coating"] },
+      { id: "sw-2", name: "Granite Double Sink – Undermount", sku: "SW-GRAN-DU", price: "$850", priceNum: 850, stock: "In Stock", specs: ["Composite granite", "33\"×19\"", "60/40 split", "8 color options, chip-resistant"] },
+      { id: "sw-3", name: "Chrome Pull-Down Kitchen Faucet", sku: "SW-KFC-PD", price: "$320", priceNum: 320, stock: "In Stock", specs: ["3-function spray", "68\" hose", "Ceramic disc cartridge", "Deck plate included"] },
+      { id: "sw-4", name: "Vessel Bathroom Sink – White Porcelain", sku: "SW-VES-WP", price: "$290", priceNum: 290, stock: "In Stock", specs: ["Vitreous china", "16\"×5.5\" oval", "Overflow drain included", "Glossy finish"] },
+      { id: "sw-5", name: "Bar/Prep Sink – 15\" Single Bowl", sku: "SW-BAR-15", price: "$210", priceNum: 210, stock: "In Stock", specs: ["18-gauge stainless", "15\"×15\"×7\"", "Bottom grid and drain included"] },
+      { id: "sw-6", name: "Touchless Kitchen Faucet – Matte Black", sku: "SW-TCH-MB", price: "$480", priceNum: 480, stock: "Special Order", specs: ["Motion sensor + manual mode", "Pull-down spray", "1.8 GPM", "Deck plate included"] },
     ],
   },
   lightsource: {
@@ -1542,12 +2370,12 @@ const catalogData: Record<PartnerKey, CatalogPartnerData> = {
     bannerHue: "#EDD9A3",
     description: "LightSource designs innovative lighting systems for kitchens, baths, and living spaces. From under-cabinet LED strips to statement pendants, every fixture is backed by a 5-year manufacturer warranty.",
     products: [
-      { name: "Under-Cabinet LED Strip Kit – 12ft", sku: "LS-LED-12", price: "$180", stock: "In Stock", specs: ["2700K warm white", "Dimmable", "Plug-in or hardwire", "Linkable up to 32ft, CRI 90+"] },
-      { name: "Pendant Light Set – Brushed Bronze (3-pack)", sku: "LS-PND-BB3", price: "$440", stock: "In Stock", specs: ["Adjustable 18\"–48\" cord", "E26 socket", "UL listed", "Fits 4\" canopy, 60W max"] },
-      { name: "Recessed Lighting Kit – 6 Pack", sku: "LS-REC-6", price: "$290", stock: "In Stock", specs: ["6\" slim", "IC-rated", "650 lumen", "3000K, dimmable, no housing required"] },
-      { name: "Statement Island Pendant – Antique Brass", sku: "LS-ISL-AB", price: "$380", stock: "Special Order", specs: ["Hand-hammered metal shade", "14\" diameter", "6ft cord", "100W equiv. LED"] },
-      { name: "Vanity Bar Light – 5-Bulb Matte Black", sku: "LS-VAN-5B", price: "$210", stock: "In Stock", specs: ["36\" width", "ETL listed for damp locations", "G25 bulb base", "14\" from wall"] },
-      { name: "Undercabinet Puck Lights – 6 Pack", sku: "LS-PCK-6", price: "$140", stock: "In Stock", specs: ["3000K", "200 lumen each", "Surface mount", "Hardwire, low-profile 0.5\" depth"] },
+      { id: "ls-1", name: "Under-Cabinet LED Strip Kit – 12ft", sku: "LS-LED-12", price: "$180", priceNum: 180, stock: "In Stock", specs: ["2700K warm white", "Dimmable", "Plug-in or hardwire", "Linkable up to 32ft, CRI 90+"] },
+      { id: "ls-2", name: "Pendant Light Set – Brushed Bronze (3-pack)", sku: "LS-PND-BB3", price: "$440", priceNum: 440, stock: "In Stock", specs: ["Adjustable 18\"–48\" cord", "E26 socket", "UL listed", "Fits 4\" canopy, 60W max"] },
+      { id: "ls-3", name: "Recessed Lighting Kit – 6 Pack", sku: "LS-REC-6", price: "$290", priceNum: 290, stock: "In Stock", specs: ["6\" slim", "IC-rated", "650 lumen", "3000K, dimmable, no housing required"] },
+      { id: "ls-4", name: "Statement Island Pendant – Antique Brass", sku: "LS-ISL-AB", price: "$380", priceNum: 380, stock: "Special Order", specs: ["Hand-hammered metal shade", "14\" diameter", "6ft cord", "100W equiv. LED"] },
+      { id: "ls-5", name: "Vanity Bar Light – 5-Bulb Matte Black", sku: "LS-VAN-5B", price: "$210", priceNum: 210, stock: "In Stock", specs: ["36\" width", "ETL listed for damp locations", "G25 bulb base", "14\" from wall"] },
+      { id: "ls-6", name: "Undercabinet Puck Lights – 6 Pack", sku: "LS-PCK-6", price: "$140", priceNum: 140, stock: "In Stock", specs: ["3000K", "200 lumen each", "Surface mount", "Hardwire, low-profile 0.5\" depth"] },
     ],
   },
   stoneworks: {
@@ -1556,12 +2384,12 @@ const catalogData: Record<PartnerKey, CatalogPartnerData> = {
     bannerHue: "#DDD0C0",
     description: "StoneWorks offers premium granite, quartz, and marble surfaces fabricated and installed by certified craftsmen. Every slab is hand-selected for consistency and sealed for long-term durability.",
     products: [
-      { name: "Calacatta Marble Slab – per sq ft", sku: "STO-CAL-SLAB", price: "$95/sqft", stock: "Special Order", specs: ["Italian origin", "White with gold veining", "Polished finish", "3/4\" or 1.25\" thickness"] },
-      { name: "Kashmir White Granite – per sq ft", sku: "STO-KWG-SLAB", price: "$55/sqft", stock: "In Stock", specs: ["India origin", "Consistent pattern", "Pre-sealed", "Available in honed or polished"] },
-      { name: "Quartz Countertop – Carrara White", sku: "STO-QTZ-CW", price: "$70/sqft", stock: "In Stock", specs: ["Engineered quartz", "Non-porous", "Scratch-resistant", "10-year warranty"] },
-      { name: "Absolute Black Granite – per sq ft", sku: "STO-ABG-SLAB", price: "$60/sqft", stock: "In Stock", specs: ["Zimbabwe origin", "Jet black", "Mirror polish", "Ideal for dramatic contrast"] },
-      { name: "Quartzite Slab – Taj Mahal", sku: "STO-QZT-TM", price: "$110/sqft", stock: "Special Order", specs: ["Brazil origin", "Soft beige/white", "Natural stone", "Requires annual sealing"] },
-      { name: "Butcher Block – Maple 8ft", sku: "STO-BB-MAP8", price: "$620", stock: "In Stock", specs: ["Solid edge-grain maple", "1.5\" thick", "25\"×96\"", "Food-safe oil finish included"] },
+      { id: "sto-1", name: "Calacatta Marble Slab – per sq ft", sku: "STO-CAL-SLAB", price: "$95/sqft", priceNum: 95, stock: "Special Order", specs: ["Italian origin", "White with gold veining", "Polished finish", "3/4\" or 1.25\" thickness"] },
+      { id: "sto-2", name: "Kashmir White Granite – per sq ft", sku: "STO-KWG-SLAB", price: "$55/sqft", priceNum: 55, stock: "In Stock", specs: ["India origin", "Consistent pattern", "Pre-sealed", "Available in honed or polished"] },
+      { id: "sto-3", name: "Quartz Countertop – Carrara White", sku: "STO-QTZ-CW", price: "$70/sqft", priceNum: 70, stock: "In Stock", specs: ["Engineered quartz", "Non-porous", "Scratch-resistant", "10-year warranty"] },
+      { id: "sto-4", name: "Absolute Black Granite – per sq ft", sku: "STO-ABG-SLAB", price: "$60/sqft", priceNum: 60, stock: "In Stock", specs: ["Zimbabwe origin", "Jet black", "Mirror polish", "Ideal for dramatic contrast"] },
+      { id: "sto-5", name: "Quartzite Slab – Taj Mahal", sku: "STO-QZT-TM", price: "$110/sqft", priceNum: 110, stock: "Special Order", specs: ["Brazil origin", "Soft beige/white", "Natural stone", "Requires annual sealing"] },
+      { id: "sto-6", name: "Butcher Block – Maple 8ft", sku: "STO-BB-MAP8", price: "$620", priceNum: 620, stock: "In Stock", specs: ["Solid edge-grain maple", "1.5\" thick", "25\"×96\"", "Food-safe oil finish included"] },
     ],
   },
   fixtureplus: {
@@ -1570,31 +2398,53 @@ const catalogData: Record<PartnerKey, CatalogPartnerData> = {
     bannerHue: "#E8D5C8",
     description: "FixturePlus delivers modern bathroom fixtures and accessories trusted by designers and contractors alike. Our collections combine durability with timeless aesthetics across every finish and style.",
     products: [
-      { name: "Freestanding Soaking Tub – Matte White", sku: "FP-TUB-FW", price: "$1,400", stock: "Special Order", specs: ["Acrylic", "59\"×29.5\"×23.5\"", "Center or end drain", "42 gallon capacity"] },
-      { name: "Walk-In Shower System – 10\" Rain Head", sku: "FP-SHW-10R", price: "$890", stock: "In Stock", specs: ["Stainless rain head", "3-function hand spray", "Thermostatic valve", "Brushed nickel"] },
-      { name: "Dual-Flush Elongated Toilet", sku: "FP-TOL-DF", price: "$380", stock: "In Stock", specs: ["1.0/1.6 GPF", "Comfort height 17\"", "Skirted trapway", "Slow-close seat included"] },
-      { name: "Chrome Towel Bar Set – 3 piece", sku: "FP-TWL-CR3", price: "$120", stock: "In Stock", specs: ["18\", 24\", and 30\" bars", "Solid brass construction", "Mounting hardware included"] },
-      { name: "Vessel Faucet – Oil-Rubbed Bronze", sku: "FP-VFC-ORB", price: "$310", stock: "Special Order", specs: ["Single-hole", "Ceramic disc", "1.2 GPM", "13\" tall spout, ADA compliant"] },
-      { name: "Recessed Shower Niche – 12\"×24\"", sku: "FP-NCH-1224", price: "$95", stock: "In Stock", specs: ["Pre-sloped stainless insert", "Tile-ready", "Installs between 16\" OC studs"] },
+      { id: "fp-1", name: "Freestanding Soaking Tub – Matte White", sku: "FP-TUB-FW", price: "$1,400", priceNum: 1400, stock: "Special Order", specs: ["Acrylic", "59\"×29.5\"×23.5\"", "Center or end drain", "42 gallon capacity"] },
+      { id: "fp-2", name: "Walk-In Shower System – 10\" Rain Head", sku: "FP-SHW-10R", price: "$890", priceNum: 890, stock: "In Stock", specs: ["Stainless rain head", "3-function hand spray", "Thermostatic valve", "Brushed nickel"] },
+      { id: "fp-3", name: "Dual-Flush Elongated Toilet", sku: "FP-TOL-DF", price: "$380", priceNum: 380, stock: "In Stock", specs: ["1.0/1.6 GPF", "Comfort height 17\"", "Skirted trapway", "Slow-close seat included"] },
+      { id: "fp-4", name: "Chrome Towel Bar Set – 3 piece", sku: "FP-TWL-CR3", price: "$120", priceNum: 120, stock: "In Stock", specs: ["18\", 24\", and 30\" bars", "Solid brass construction", "Mounting hardware included"] },
+      { id: "fp-5", name: "Vessel Faucet – Oil-Rubbed Bronze", sku: "FP-VFC-ORB", price: "$310", priceNum: 310, stock: "Special Order", specs: ["Single-hole", "Ceramic disc", "1.2 GPM", "13\" tall spout, ADA compliant"] },
+      { id: "fp-6", name: "Recessed Shower Niche – 12\"×24\"", sku: "FP-NCH-1224", price: "$95", priceNum: 95, stock: "In Stock", specs: ["Pre-sloped stainless insert", "Tile-ready", "Installs between 16\" OC studs"] },
     ],
   },
 }
 
-function CatalogPage({ 
-  partner, 
-  navigateTo 
-}: { 
+function CatalogPage({
+  partner,
+  navigateTo,
+  addToCart,
+}: {
   partner: PartnerKey
-  navigateTo: (page: PageView) => void 
+  navigateTo: (page: PageView) => void
+  addToCart: (item: Omit<CartItem, "qty">) => void
 }) {
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set())
   const data = catalogData[partner]
+
+  const handleAddToCart = (product: CatalogProduct) => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      price: product.priceNum,
+      category: data.category,
+      source: "catalog",
+    })
+    setAddedItems((prev) => new Set(prev).add(product.id))
+    setTimeout(() => {
+      setAddedItems((prev) => {
+        const next = new Set(prev)
+        next.delete(product.id)
+        return next
+      })
+    }, 1500)
+  }
 
   return (
     <div className="py-8 bg-[#FAF7F2]">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-sm text-[#8A7060]">
-          <button 
+          <button
             onClick={() => navigateTo("partners")}
             className="hover:text-[#7C5C3E] transition-colors"
           >
@@ -1605,7 +2455,7 @@ function CatalogPage({
         </div>
 
         {/* Hero Banner */}
-        <div 
+        <div
           className="rounded-2xl p-8 lg:p-12 mb-12"
           style={{ backgroundColor: data.bannerHue }}
         >
@@ -1620,10 +2470,8 @@ function CatalogPage({
               <Badge className="mt-2 bg-[#C9973A]/20 text-[#7C5C3E] border-none">
                 {data.category}
               </Badge>
-              <p className="mt-4 text-[#5C3D20] max-w-2xl">
-                {data.description}
-              </p>
-              <Button 
+              <p className="mt-4 text-[#5C3D20] max-w-2xl">{data.description}</p>
+              <Button
                 onClick={() => navigateTo("quote")}
                 variant="outline"
                 className="mt-6 border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
@@ -1640,19 +2488,23 @@ function CatalogPage({
             Featured Products from {data.name}
           </h2>
           <p className="text-[#8A7060] mb-8">
-            Browse current models and technical specifications. Contact our team to place an order or request a custom quote.
+            Browse current models and technical specifications. Contact our team to place an order
+            or request a custom quote.
           </p>
 
           {/* Product Grid */}
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {data.products.map((product) => (
-              <Card key={product.sku} className="bg-[#F0EAE0] border-[#DDD0C0] hover:shadow-lg transition-shadow">
+              <Card
+                key={product.sku}
+                className="bg-[#F0EAE0] border-[#DDD0C0] hover:shadow-lg transition-shadow"
+              >
                 <CardContent className="p-6">
                   {/* Product Icon */}
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7C5C3E]/10 mx-auto mb-4">
                     <Package className="h-8 w-8 text-[#7C5C3E]" />
                   </div>
-                  
+
                   {/* Product Info */}
                   <h3 className="font-serif text-lg font-semibold text-[#2C1A0E] text-center">
                     {product.name}
@@ -1660,7 +2512,7 @@ function CatalogPage({
                   <p className="text-xs text-[#8A7060] text-center font-mono mt-1">
                     SKU: {product.sku}
                   </p>
-                  
+
                   {/* Specs */}
                   <ul className="mt-4 space-y-1">
                     {product.specs.map((spec, i) => (
@@ -1670,7 +2522,7 @@ function CatalogPage({
                       </li>
                     ))}
                   </ul>
-                  
+
                   {/* Price & Stock */}
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-xl font-bold text-[#7C5C3E]">{product.price}</span>
@@ -1687,7 +2539,7 @@ function CatalogPage({
                       {product.stock}
                     </Badge>
                   </div>
-                  
+
                   {/* Action Buttons */}
                   <div className="mt-4 flex gap-2">
                     <Button
@@ -1696,13 +2548,43 @@ function CatalogPage({
                     >
                       View Specs
                     </Button>
-                    <Button
-                      onClick={() => navigateTo("quote")}
-                      className="flex-1 bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
-                    >
-                      Request Quote
-                    </Button>
+                    {product.stock === "Special Order" ? (
+                      <Button
+                        onClick={() => navigateTo("quote")}
+                        className="flex-1 bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+                      >
+                        Request Quote
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleAddToCart(product)}
+                        className={cn(
+                          "flex-1",
+                          addedItems.has(product.id)
+                            ? "bg-green-600 hover:bg-green-600"
+                            : "bg-[#7C5C3E] hover:bg-[#5C3D20]",
+                          "text-white"
+                        )}
+                      >
+                        {addedItems.has(product.id) ? (
+                          <>
+                            <Check className="h-4 w-4 mr-1" />
+                            Added!
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingCart className="h-4 w-4 mr-1" />
+                            Add to Cart
+                          </>
+                        )}
+                      </Button>
+                    )}
                   </div>
+                  {product.stock === "Special Order" && (
+                    <p className="mt-2 text-xs text-[#8A7060] text-center">
+                      Special order — contact us for pricing.
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))}
@@ -1737,6 +2619,800 @@ function CatalogPage({
           >
             View All Partners
           </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============ CHECKOUT PAGE ============
+function CheckoutPage({
+  cartItems,
+  cartTotal,
+  updateQty,
+  clearCart,
+  navigateTo,
+  setCartOpen,
+}: {
+  cartItems: CartItem[]
+  cartTotal: number
+  updateQty: (id: string, delta: number) => void
+  clearCart: () => void
+  navigateTo: (page: PageView) => void
+  setCartOpen: (open: boolean) => void
+}) {
+  const [step, setStep] = useState(1)
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    location: "",
+    contactMethod: "email",
+    notes: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
+    cardName: "",
+  })
+  const [submitted, setSubmitted] = useState(false)
+
+  if (cartItems.length === 0 && !submitted) {
+    return (
+      <div className="py-16 bg-[#FAF7F2]">
+        <div className="mx-auto max-w-2xl px-4 lg:px-8 text-center">
+          <ShoppingCart className="h-20 w-20 text-[#DDD0C0] mx-auto mb-6" />
+          <h1 className="font-serif text-3xl font-bold text-[#2C1A0E] mb-4">
+            Your cart is empty
+          </h1>
+          <p className="text-[#8A7060] mb-8">
+            Add some products to your cart to proceed to checkout.
+          </p>
+          <Button
+            onClick={() => navigateTo("cabinets")}
+            className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+          >
+            Browse Products
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  if (submitted) {
+    return (
+      <div className="py-16 bg-[#FAF7F2]">
+        <div className="mx-auto max-w-2xl px-4 lg:px-8 text-center">
+          <div className="animate-[scaleIn_0.5s_ease-out]">
+            <CheckCircle className="h-20 w-20 text-[#C9973A] mx-auto mb-6" />
+          </div>
+          <h1 className="font-serif text-3xl font-bold text-[#2C1A0E] mb-4">
+            Thank You, {formData.firstName}!
+          </h1>
+          <p className="text-[#8A7060] mb-8">
+            Your order request has been received and is being reviewed by our team.
+          </p>
+
+          <Card className="bg-[#F0EAE0] border-[#7C5C3E] text-left mb-8">
+            <CardContent className="p-6">
+              <h3 className="font-semibold text-[#2C1A0E] mb-4">Order Summary</h3>
+              <div className="space-y-2 mb-4">
+                {cartItems.map((item) => (
+                  <div key={item.id} className="flex justify-between text-sm">
+                    <span className="text-[#2C1A0E]">
+                      {item.name} x {item.qty}
+                    </span>
+                    <span className="text-[#7C5C3E]">
+                      ${(item.price * item.qty).toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-[#DDD0C0] pt-4">
+                <div className="flex justify-between font-bold">
+                  <span className="text-[#2C1A0E]">Total</span>
+                  <span className="text-[#7C5C3E]">${cartTotal.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-[#DDD0C0] text-sm text-[#8A7060]">
+                <p>Contact: {formData.firstName} {formData.lastName}</p>
+                <p>{formData.email}</p>
+                <p>{formData.phone}</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex items-start gap-3 bg-[#F0EAE0] rounded-lg p-4 text-left mb-8">
+            <Clock className="h-5 w-5 text-[#C9973A] shrink-0 mt-0.5" />
+            <p className="text-sm text-[#2C1A0E]">
+              An HRS team member will contact you within <strong>1 business day</strong> to confirm
+              your order, finalize delivery/installation scheduling, and provide your final invoice.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => {
+                clearCart()
+                navigateTo("cabinets")
+              }}
+              variant="outline"
+              className="border-[#7C5C3E] text-[#7C5C3E]"
+            >
+              Browse More Products
+            </Button>
+            <Button
+              onClick={() => {
+                clearCart()
+                navigateTo("home")
+              }}
+              className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+            >
+              Return Home
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="py-16 bg-[#FAF7F2]">
+      <div className="mx-auto max-w-4xl px-4 lg:px-8">
+        {/* Step Indicator */}
+        <div className="flex items-center justify-center mb-12">
+          {[
+            { num: 1, label: "Review Order" },
+            { num: 2, label: "Contact Info" },
+            { num: 3, label: "Payment" },
+          ].map((s, i) => (
+            <div key={s.num} className="flex items-center">
+              <div className="flex flex-col items-center">
+                <div
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold",
+                    step > s.num
+                      ? "bg-[#7C5C3E] text-white"
+                      : step === s.num
+                      ? "bg-[#7C5C3E] text-white"
+                      : "border-2 border-[#DDD0C0] text-[#8A7060]"
+                  )}
+                >
+                  {step > s.num ? <Check className="h-5 w-5" /> : s.num}
+                </div>
+                <span className="mt-2 text-xs text-[#8A7060]">{s.label}</span>
+              </div>
+              {i < 2 && (
+                <div
+                  className={cn(
+                    "h-1 w-16 mx-2 rounded",
+                    step > s.num ? "bg-[#7C5C3E]" : "bg-[#DDD0C0]"
+                  )}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Step 1: Review Order */}
+        {step === 1 && (
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-6">Review Your Order</h2>
+            <Card className="bg-white border-[#DDD0C0] mb-6">
+              <CardContent className="p-0">
+                <table className="w-full">
+                  <thead className="bg-[#F0EAE0]">
+                    <tr>
+                      <th className="text-left p-4 text-sm font-medium text-[#2C1A0E]">Product</th>
+                      <th className="text-left p-4 text-sm font-medium text-[#2C1A0E]">SKU</th>
+                      <th className="text-center p-4 text-sm font-medium text-[#2C1A0E]">Qty</th>
+                      <th className="text-right p-4 text-sm font-medium text-[#2C1A0E]">Unit Price</th>
+                      <th className="text-right p-4 text-sm font-medium text-[#2C1A0E]">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cartItems.map((item) => (
+                      <tr key={item.id} className="border-t border-[#DDD0C0]">
+                        <td className="p-4 text-sm text-[#2C1A0E]">{item.name}</td>
+                        <td className="p-4 text-xs text-[#8A7060] font-mono">{item.sku}</td>
+                        <td className="p-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => updateQty(item.id, -1)}
+                              disabled={item.qty <= 1}
+                              className="p-1 border border-[#7C5C3E] rounded text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white disabled:opacity-50"
+                            >
+                              <Minus className="h-3 w-3" />
+                            </button>
+                            <span className="w-8 text-center text-sm">{item.qty}</span>
+                            <button
+                              onClick={() => updateQty(item.id, 1)}
+                              className="p-1 border border-[#7C5C3E] rounded text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="p-4 text-right text-sm text-[#2C1A0E]">
+                          ${item.price.toLocaleString()}
+                        </td>
+                        <td className="p-4 text-right text-sm font-medium text-[#7C5C3E]">
+                          ${(item.price * item.qty).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </CardContent>
+            </Card>
+
+            <div className="bg-[#F0EAE0] rounded-lg p-6 space-y-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-[#8A7060]">Subtotal</span>
+                <span className="text-[#2C1A0E]">${cartTotal.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-[#8A7060]">Delivery & Installation</span>
+                <span className="text-[#8A7060] italic">Quoted separately</span>
+              </div>
+              <div className="border-t border-[#DDD0C0] pt-3 flex justify-between">
+                <span className="font-bold text-[#2C1A0E]">Order Total</span>
+                <span className="text-2xl font-bold text-[#7C5C3E]">
+                  ${cartTotal.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-between">
+              <Button
+                onClick={() => setCartOpen(true)}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E]"
+              >
+                Back to Cart
+              </Button>
+              <Button
+                onClick={() => setStep(2)}
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                Continue to Contact Info
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Contact Info */}
+        {step === 2 && (
+          <div>
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-6">
+              Your Contact Information
+            </h2>
+            <Card className="bg-white border-[#DDD0C0]">
+              <CardContent className="p-6 space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#2C1A0E]">First Name</label>
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                      placeholder="John"
+                      className="border-[#DDD0C0]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#2C1A0E]">Last Name</label>
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                      placeholder="Doe"
+                      className="border-[#DDD0C0]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Email Address</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8A7060]" />
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="john@example.com"
+                      className="border-[#DDD0C0] pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8A7060]" />
+                    <Input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="(555) 123-4567"
+                      className="border-[#DDD0C0] pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Nearest HRS Location</label>
+                  <Select
+                    value={formData.location}
+                    onValueChange={(value) => setFormData({ ...formData, location: value })}
+                  >
+                    <SelectTrigger className="border-[#DDD0C0]">
+                      <SelectValue placeholder="Select a location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="phoenix">Phoenix (HQ)</SelectItem>
+                      <SelectItem value="scottsdale">Scottsdale</SelectItem>
+                      <SelectItem value="tucson">Tucson</SelectItem>
+                      <SelectItem value="las-vegas">Las Vegas</SelectItem>
+                      <SelectItem value="albuquerque">Albuquerque</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">Preferred Contact Method</label>
+                  <RadioGroup
+                    value={formData.contactMethod}
+                    onValueChange={(value) => setFormData({ ...formData, contactMethod: value })}
+                    className="flex gap-4"
+                  >
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <RadioGroupItem value="email" className="border-[#7C5C3E] text-[#7C5C3E]" />
+                      <span className="text-sm text-[#2C1A0E]">Email</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <RadioGroupItem value="phone" className="border-[#7C5C3E] text-[#7C5C3E]" />
+                      <span className="text-sm text-[#2C1A0E]">Phone</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <RadioGroupItem value="either" className="border-[#7C5C3E] text-[#7C5C3E]" />
+                      <span className="text-sm text-[#2C1A0E]">Either</span>
+                    </label>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-[#2C1A0E]">
+                    Notes / Special Requests (Optional)
+                  </label>
+                  <Textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder="Any special requirements, access notes, or questions for the HRS team..."
+                    className="border-[#DDD0C0] min-h-[100px]"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="mt-8 flex justify-between">
+              <Button
+                onClick={() => setStep(1)}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E]"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={() => setStep(3)}
+                disabled={
+                  !formData.firstName ||
+                  !formData.lastName ||
+                  !formData.email ||
+                  !formData.phone ||
+                  !formData.location
+                }
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                Continue to Payment
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Payment */}
+        {step === 3 && (
+          <div>
+            {/* Demo Banner */}
+            <div className="bg-amber-100 border-2 border-amber-400 rounded-lg p-4 mb-8 flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
+              <div>
+                <p className="font-bold text-amber-800">DEMONSTRATION ONLY</p>
+                <p className="text-sm text-amber-700">
+                  This is a mock checkout for demonstration purposes. No real payment will be
+                  processed. No charges will be made. Do not enter real card details.
+                </p>
+              </div>
+            </div>
+
+            <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] mb-6">Payment Information</h2>
+
+            <div className="grid gap-8 lg:grid-cols-2">
+              {/* Payment Form */}
+              <Card className="bg-white border-[#DDD0C0]">
+                <CardContent className="p-6 space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#2C1A0E]">Card Number</label>
+                    <div className="relative">
+                      <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8A7060]" />
+                      <Input
+                        value={formData.cardNumber}
+                        onChange={(e) => setFormData({ ...formData, cardNumber: e.target.value })}
+                        placeholder="4242 4242 4242 4242"
+                        className="border-[#DDD0C0] pl-10"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-[#2C1A0E]">Expiry Date</label>
+                      <Input
+                        value={formData.expiry}
+                        onChange={(e) => setFormData({ ...formData, expiry: e.target.value })}
+                        placeholder="MM/YY"
+                        className="border-[#DDD0C0]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-[#2C1A0E]">CVV</label>
+                      <Input
+                        value={formData.cvv}
+                        onChange={(e) => setFormData({ ...formData, cvv: e.target.value })}
+                        placeholder="123"
+                        className="border-[#DDD0C0]"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-[#2C1A0E]">Name on Card</label>
+                    <Input
+                      value={formData.cardName}
+                      onChange={(e) => setFormData({ ...formData, cardName: e.target.value })}
+                      placeholder="John Doe"
+                      className="border-[#DDD0C0]"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Order Summary */}
+              <Card className="bg-[#F0EAE0] border-[#DDD0C0]">
+                <CardHeader>
+                  <CardTitle className="text-lg text-[#2C1A0E]">Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {cartItems.map((item) => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span className="text-[#2C1A0E]">
+                        {item.name} x {item.qty}
+                      </span>
+                      <span className="text-[#7C5C3E]">
+                        ${(item.price * item.qty).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="border-t border-[#DDD0C0] pt-3 flex justify-between">
+                    <span className="font-bold text-[#2C1A0E]">Order Total</span>
+                    <span className="text-xl font-bold text-[#7C5C3E]">
+                      ${cartTotal.toLocaleString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-8 flex justify-between">
+              <Button
+                onClick={() => setStep(2)}
+                variant="outline"
+                className="border-[#7C5C3E] text-[#7C5C3E]"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={() => setSubmitted(true)}
+                disabled={!formData.cardNumber || !formData.expiry || !formData.cvv || !formData.cardName}
+                className="bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+              >
+                Submit Order Request
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============ LOCATIONS HUB ============
+function LocationsHub({ navigateTo }: { navigateTo: (page: PageView) => void }) {
+  const locations = [
+    { id: "phoenix", city: "Phoenix (HQ)", address: "101 Sedalia Drive, Phoenix, AZ 85001", phone: "602-KITCHEN", team: 10, page: "location-phoenix" as PageView },
+    { id: "scottsdale", city: "Scottsdale", address: "4500 N Scottsdale Rd, Scottsdale, AZ 85251", phone: "480-KITCHEN", team: 8, page: "location-scottsdale" as PageView },
+    { id: "tucson", city: "Tucson", address: "2200 E Broadway Blvd, Tucson, AZ 85719", phone: "520-KITCHEN", team: 7, page: "location-tucson" as PageView },
+    { id: "las-vegas", city: "Las Vegas", address: "3800 S Maryland Pkwy, Las Vegas, NV 89119", phone: "702-KITCHEN", team: 7, page: "location-las-vegas" as PageView },
+    { id: "albuquerque", city: "Albuquerque", address: "6600 Menaul Blvd NE, Albuquerque, NM 87110", phone: "505-KITCHEN", team: 7, page: "location-albuquerque" as PageView },
+  ]
+
+  return (
+    <div className="py-16 bg-[#FAF7F2]">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="font-serif text-4xl font-bold text-[#2C1A0E]">Our Southwest Locations</h1>
+          <div className="mt-4 mx-auto w-24 h-1 bg-[#C9973A]" />
+          <p className="mt-6 text-[#8A7060] max-w-2xl mx-auto">
+            Five HRS showrooms and service teams, ready to bring your renovation vision to life.
+          </p>
+        </div>
+
+        {/* Location Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {locations.map((loc) => (
+            <Card key={loc.id} className="bg-[#F0EAE0] border-[#DDD0C0] hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7C5C3E]/10 mx-auto mb-4">
+                  <MapPin className="h-8 w-8 text-[#7C5C3E]" />
+                </div>
+                <h3 className="font-serif text-xl font-bold text-[#2C1A0E] text-center mb-2">
+                  {loc.city}
+                </h3>
+                <p className="text-sm text-[#8A7060] text-center mb-4">{loc.address}</p>
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center justify-center gap-2 text-sm text-[#8A7060]">
+                    <Phone className="h-4 w-4" />
+                    {loc.phone}
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-sm text-[#8A7060]">
+                    <Clock className="h-4 w-4" />
+                    Mon–Sat 8:00 AM – 6:00 PM
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-sm text-[#8A7060]">
+                    <Users className="h-4 w-4" />
+                    {loc.team}-person team
+                  </div>
+                </div>
+                <Button
+                  onClick={() => navigateTo(loc.page)}
+                  className="w-full bg-[#7C5C3E] hover:bg-[#5C3D20] text-white"
+                >
+                  View Location
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============ INDIVIDUAL LOCATION PAGE ============
+type LocationCity = "phoenix" | "scottsdale" | "tucson" | "las-vegas" | "albuquerque"
+
+const locationData: Record<
+  LocationCity,
+  {
+    city: string
+    address: string
+    phone: string
+    team: number
+    teamMembers: { name: string; role: string }[]
+  }
+> = {
+  phoenix: {
+    city: "Phoenix (HQ)",
+    address: "101 Sedalia Drive, Phoenix, AZ 85001",
+    phone: "602-KITCHEN",
+    team: 10,
+    teamMembers: [
+      { name: "Jessica M.", role: "Lead Kitchen Designer" },
+      { name: "Tom R.", role: "Bath & Tile Specialist" },
+      { name: "Maria L.", role: "Office Manager" },
+    ],
+  },
+  scottsdale: {
+    city: "Scottsdale",
+    address: "4500 N Scottsdale Rd, Scottsdale, AZ 85251",
+    phone: "480-KITCHEN",
+    team: 8,
+    teamMembers: [
+      { name: "Amanda K.", role: "Senior Designer" },
+      { name: "Brian P.", role: "Installation Lead" },
+      { name: "Diana S.", role: "Client Relations" },
+    ],
+  },
+  tucson: {
+    city: "Tucson",
+    address: "2200 E Broadway Blvd, Tucson, AZ 85719",
+    phone: "520-KITCHEN",
+    team: 7,
+    teamMembers: [
+      { name: "Carlos V.", role: "Kitchen Specialist" },
+      { name: "Elena R.", role: "Design Consultant" },
+      { name: "Frank M.", role: "Operations Manager" },
+    ],
+  },
+  "las-vegas": {
+    city: "Las Vegas",
+    address: "3800 S Maryland Pkwy, Las Vegas, NV 89119",
+    phone: "702-KITCHEN",
+    team: 7,
+    teamMembers: [
+      { name: "Nicole B.", role: "Lead Designer" },
+      { name: "James W.", role: "Master Installer" },
+      { name: "Sophia C.", role: "Sales Coordinator" },
+    ],
+  },
+  albuquerque: {
+    city: "Albuquerque",
+    address: "6600 Menaul Blvd NE, Albuquerque, NM 87110",
+    phone: "505-KITCHEN",
+    team: 7,
+    teamMembers: [
+      { name: "Rachel T.", role: "Design Lead" },
+      { name: "Miguel H.", role: "Cabinetry Expert" },
+      { name: "Karen D.", role: "Office Administrator" },
+    ],
+  },
+}
+
+function LocationPage({
+  city,
+  navigateTo,
+  navigateToQuoteWithLocation,
+}: {
+  city: LocationCity
+  navigateTo: (page: PageView) => void
+  navigateToQuoteWithLocation: (locationId: string) => void
+}) {
+  const data = locationData[city]
+
+  return (
+    <div className="py-8 bg-[#FAF7F2]">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        {/* Breadcrumb */}
+        <div className="mb-6 flex items-center gap-2 text-sm text-[#8A7060]">
+          <button
+            onClick={() => navigateTo("locations")}
+            className="hover:text-[#7C5C3E] transition-colors"
+          >
+            Locations
+          </button>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-[#2C1A0E] font-medium">{data.city}</span>
+        </div>
+
+        {/* Hero Banner */}
+        <div className="bg-[#F0EAE0] rounded-2xl p-8 lg:p-12 border-b-4 border-[#7C5C3E] mb-12">
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-[#7C5C3E]/10">
+              <MapPin className="h-12 w-12 text-[#7C5C3E]" />
+            </div>
+            <div className="flex-1 text-center lg:text-left">
+              <h1 className="font-serif text-3xl lg:text-4xl font-bold text-[#2C1A0E]">
+                {data.city}
+              </h1>
+              <p className="text-[#8A7060] mt-1">HRS {data.city.replace(" (HQ)", "")} Location</p>
+              <p className="mt-4 text-[#5C3D20]">{data.address}</p>
+              <a
+                href={`tel:${data.phone}`}
+                className="inline-flex items-center gap-2 mt-2 text-[#7C5C3E] hover:text-[#5C3D20] font-medium"
+              >
+                <Phone className="h-4 w-4" />
+                {data.phone}
+              </a>
+              <Badge className="block w-fit mt-4 bg-[#C9973A]/20 text-[#7C5C3E] border-none mx-auto lg:mx-0">
+                Mon–Sat 8:00 AM – 6:00 PM
+              </Badge>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Cards */}
+        <div className="grid gap-6 md:grid-cols-3 mb-12">
+          <Card className="bg-[#F0EAE0] border-[#DDD0C0]">
+            <CardContent className="p-6 text-center">
+              <Clock className="h-8 w-8 text-[#C9973A] mx-auto mb-3" />
+              <h3 className="font-semibold text-[#2C1A0E] mb-2">Hours</h3>
+              <p className="text-sm text-[#8A7060]">Mon–Sat 8:00 AM – 6:00 PM</p>
+              <p className="text-sm text-[#8A7060]">Closed Sunday</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-[#F0EAE0] border-[#DDD0C0]">
+            <CardContent className="p-6 text-center">
+              <Users className="h-8 w-8 text-[#C9973A] mx-auto mb-3" />
+              <h3 className="font-semibold text-[#2C1A0E] mb-2">Our Team</h3>
+              <p className="text-sm text-[#8A7060]">{data.team} dedicated renovation specialists</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-[#F0EAE0] border-[#DDD0C0]">
+            <CardContent className="p-6 text-center">
+              <Wrench className="h-8 w-8 text-[#C9973A] mx-auto mb-3" />
+              <h3 className="font-semibold text-[#2C1A0E] mb-2">Services</h3>
+              <p className="text-sm text-[#8A7060]">
+                Full kitchen & bath renovations, custom cabinets, appliance install
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Map Placeholder */}
+        <div className="bg-[#E8D5B7] rounded-2xl border-2 border-[#7C5C3E] h-[380px] flex flex-col items-center justify-center mb-12">
+          <Map className="h-16 w-16 text-[#7C5C3E] mb-4" />
+          <p className="font-semibold text-[#2C1A0E] mb-2">{data.address}</p>
+          <p className="text-sm text-[#8A7060] mb-4">
+            Interactive map coming soon — get directions via Google Maps
+          </p>
+          <Button
+            asChild
+            variant="outline"
+            className="border-[#7C5C3E] text-[#7C5C3E] hover:bg-[#7C5C3E] hover:text-white"
+          >
+            <a
+              href={`https://maps.google.com/?q=${encodeURIComponent(data.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Get Directions
+              <ExternalLink className="h-4 w-4 ml-2" />
+            </a>
+          </Button>
+        </div>
+
+        {/* Team Section */}
+        <div className="mb-12">
+          <h2 className="font-serif text-2xl font-bold text-[#2C1A0E] text-center mb-8">
+            Meet the Local Team
+          </h2>
+          <div className="grid gap-6 md:grid-cols-3">
+            {data.teamMembers.map((member) => (
+              <Card key={member.name} className="bg-[#F0EAE0] border-[#DDD0C0]">
+                <CardContent className="p-6 text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7C5C3E]/10 mx-auto mb-4">
+                    <Users className="h-8 w-8 text-[#7C5C3E]" />
+                  </div>
+                  <h3 className="font-semibold text-[#2C1A0E]">{member.name}</h3>
+                  <p className="text-sm text-[#8A7060]">{member.role}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom CTA */}
+        <div className="bg-[#7C5C3E] rounded-2xl p-8 lg:p-12 text-center text-white">
+          <h2 className="font-serif text-2xl font-bold mb-4">
+            Ready to start your {data.city.replace(" (HQ)", "")} renovation?
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={() => navigateTo("cabinets")}
+              variant="outline"
+              className="border-white text-white hover:bg-white hover:text-[#7C5C3E]"
+            >
+              Browse Products
+            </Button>
+            <Button
+              onClick={() => navigateToQuoteWithLocation(city)}
+              className="bg-[#FAF7F2] text-[#7C5C3E] hover:bg-[#F0EAE0]"
+            >
+              Schedule a Consultation
+            </Button>
+          </div>
         </div>
       </div>
     </div>
